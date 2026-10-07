@@ -19,8 +19,9 @@
 
 ```
 battery-test/   モバイルバッテリーの自動オフを確かめるテスト用ファームウェア（PlatformIO）
-call-button/    呼び出しボタン本体のファームウェア（これから作る）
-docs/           引き継ぎ資料など
+call-button/    呼び出しボタン本体のファームウェア
+docs/           引き継ぎ資料・UX 仕様（ux-proposal.html）・プレートの設計（plate-design.html）
+plate/          M5Dial を埋め込むプレートの 3D モデル（build123d で STEP / STL を書き出す）
 tools/          開発用スクリプト（シリアルログの読み取りなど）
 ```
 

@@ -1,0 +1,507 @@
+<title>oyobidashi プレート</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DotGothic16&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans+JP:wght@400;500;700&family=Noto+Sans+JP:wght@400;700;900&display=swap">
+<script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"}}</script>
+<style>
+/* Layout: 図面のように、実寸比の正面図を横に並べて比べる。プレートの色は造形色なので両テーマ共通 */
+:root {
+  --bg: #F2F2EF;
+  --surface: #FFFFFF;
+  --line: #DCDBD5;
+  --fg: #16150F;
+  --muted: #66645C;
+  --accent: #C8430E;
+  --accent-soft: #FBE3D6;
+  --grid: #E6E5DF;
+  --dim: #8A877E;
+
+  --pla-orange: #FF5A1F;
+  --pla-black: #1A1A1A;
+  --pla-white: #F4F4F0;
+  --dev-bezel: #2A2A2A;
+  --dev-bezel-hi: #4A4A4A;
+  --dev-screen: #FF5A1F;
+  --dev-ink: #140700;
+  --battery: #3B3F45;
+
+  --f-display: "DotGothic16", "IBM Plex Sans JP", sans-serif;
+  --f-body: "IBM Plex Sans JP", "Hiragino Sans", sans-serif;
+  --f-mono: "IBM Plex Mono", ui-monospace, Menlo, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #121210; --surface: #1B1B18; --line: #2F2E2A; --fg: #ECEAE3; --muted: #A3A096;
+    --accent: #FF6A33; --accent-soft: #3A1F13; --grid: #26251F; --dim: #8D8A80; color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #121210; --surface: #1B1B18; --line: #2F2E2A; --fg: #ECEAE3; --muted: #A3A096;
+  --accent: #FF6A33; --accent-soft: #3A1F13; --grid: #26251F; --dim: #8D8A80; color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body { background: var(--bg); color: var(--fg); font-family: var(--f-body); line-height: 1.75; padding-inline: 16px; padding-block: 0 4rem; }
+.wrap { max-width: 1120px; margin-inline: auto; }
+h1, h2, h3 { margin: 0; line-height: 1.35; text-wrap: balance; }
+p { margin: 0; }
+.hero { padding-block: 3rem 2rem; display: grid; gap: 1rem; border-bottom: 1px solid var(--line); }
+.eyebrow { font-family: var(--f-mono); font-size: .75rem; letter-spacing: .08em; color: var(--muted); text-transform: uppercase; }
+.hero h1 { font-family: var(--f-display); font-weight: 400; font-size: clamp(1.8rem, 5vw, 2.8rem); }
+.lead { max-width: 46em; }
+section { padding-block: 2.5rem; border-bottom: 1px solid var(--line); display: grid; gap: 1.25rem; }
+section > h2 { font-size: 1.4rem; display: flex; gap: .75rem; align-items: baseline; }
+section > h2 small { font-family: var(--f-mono); font-size: .75rem; color: var(--muted); font-weight: 400; letter-spacing: .06em; }
+section > p { max-width: 46em; }
+.note { color: var(--muted); font-size: .875rem; max-width: 46em; }
+
+.scroll { overflow-x: auto; border: 1px solid var(--line); background: var(--surface); }
+table { border-collapse: collapse; width: 100%; font-size: .875rem; }
+th, td { text-align: left; vertical-align: top; padding: .6rem .8rem; border-bottom: 1px solid var(--line); }
+thead th { font-family: var(--f-mono); font-weight: 500; font-size: .72rem; letter-spacing: .05em; color: var(--muted); text-transform: uppercase; background: var(--bg); }
+tbody tr:last-child td, tbody tr:last-child th { border-bottom: 0; }
+td.n { font-family: var(--f-mono); font-variant-numeric: tabular-nums; white-space: nowrap; }
+
+.toolbar { display: flex; gap: .75rem; flex-wrap: wrap; align-items: center; }
+.seg { display: inline-flex; border: 1px solid var(--line); border-radius: .4rem; overflow: hidden; }
+.seg button { border: 0; background: var(--surface); color: var(--fg); padding: .45rem .8rem; cursor: pointer; font: inherit; font-size: .85rem; display: inline-flex; gap: .45rem; align-items: center; }
+.seg button[aria-pressed="true"] { background: var(--fg); color: var(--bg); }
+.sw { width: .9rem; height: .9rem; border-radius: 50%; display: inline-block; border: 1px solid var(--dim); }
+.label { font-family: var(--f-mono); font-size: .75rem; color: var(--muted); }
+
+.concepts { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1rem; align-items: start; }
+.concept { background: var(--surface); border: 1px solid var(--line); padding: 1.25rem; display: grid; gap: .9rem; min-width: 0; position: relative; }
+.concept.rec { border-color: var(--accent); box-shadow: inset 0 0 0 1px var(--accent); }
+.badge { position: absolute; top: .8rem; right: .8rem; font-family: var(--f-mono); font-size: .72rem; background: var(--accent); color: var(--surface); padding: .1rem .5rem; border-radius: .25rem; }
+.concept h3 { font-size: 1.05rem; }
+.concept .size { font-family: var(--f-mono); font-size: .75rem; color: var(--muted); }
+.concept ul { margin: 0; padding-left: 1.1em; font-size: .85rem; color: var(--muted); display: grid; gap: .2rem; }
+.stage { background: repeating-linear-gradient(0deg, transparent 0 19px, var(--grid) 19px 20px), repeating-linear-gradient(90deg, transparent 0 19px, var(--grid) 19px 20px); border: 1px solid var(--line); padding: 1rem; display: grid; place-items: center; }
+.stage svg { width: 100%; height: auto; max-height: 460px; display: block; }
+
+.section-fig { background: var(--surface); border: 1px solid var(--line); padding: 1rem; overflow-x: auto; }
+.section-fig svg { width: 100%; min-width: 560px; height: auto; display: block; }
+
+.asks { margin: 0; padding-left: 1.4em; display: grid; gap: .7rem; max-width: 46em; }
+.asks li::marker { font-family: var(--f-mono); color: var(--accent); }
+.asks b { display: block; }
+.asks span { color: var(--muted); font-size: .875rem; }
+
+/* SVG のプレート：色は切り替えボタンで差し替える */
+.plate-svg { --base: var(--pla-orange); --ink: var(--pla-black); }
+.plate-svg[data-color="black"] { --base: var(--pla-black); --ink: var(--pla-white); }
+.plate-svg .base { fill: var(--base); }
+.plate-svg .ink { fill: var(--ink); }
+.plate-svg .ink-stroke { stroke: var(--ink); fill: none; }
+.plate-svg .bezel { fill: var(--dev-bezel); }
+.plate-svg .bezel-hi { fill: none; stroke: var(--dev-bezel-hi); }
+.plate-svg .screen { fill: var(--dev-screen); }
+.plate-svg .screen-ink { fill: var(--dev-ink); }
+.plate-svg text { font-family: "Noto Sans JP", sans-serif; }
+.dimline { stroke: var(--dim); stroke-width: .3; fill: none; }
+.dimtext { fill: var(--dim); font-family: "IBM Plex Mono", monospace; font-size: 4px; }
+
+.viewer { background: var(--surface); border: 1px solid var(--line); display: grid; }
+.viewer canvas { width: 100%; aspect-ratio: 16 / 10; display: block; touch-action: none; cursor: grab; }
+.viewer .bar { display: flex; gap: .75rem; flex-wrap: wrap; align-items: center; padding: .75rem; border-top: 1px solid var(--line); }
+.viewer .status { font-size: .8rem; color: var(--muted); padding: 0 .75rem .75rem; }
+.front-img { background: var(--surface); border: 1px solid var(--line); padding: 1rem; }
+.front-img img { width: 100%; height: auto; display: block; }
+.steps { margin: 0; padding-left: 1.4em; display: grid; gap: .6rem; max-width: 46em; }
+.steps li::marker { font-family: var(--f-mono); color: var(--accent); }
+.steps span { color: var(--muted); font-size: .875rem; display: block; }
+code { font-family: var(--f-mono); font-size: .85em; }
+</style>
+
+<div class="wrap">
+<header class="hero">
+  <div class="eyebrow">oyobidashi · plate · 2026-10-07</div>
+  <h1>M5Dial を埋め込むプレート</h1>
+  <p class="lead">展示ブースの机に立てて置く、呼び出しボタンのプレートです。Bambu Lab A1 mini (造形範囲 180 × 180 × 180 mm) で、文字と装飾を少し盛り上げて2色で造形します。形は <b>B 横長 (170 × 110 mm)</b> に決まり、3D モデルを作りました。下のビューアで回して確かめられます。</p>
+</header>
+
+<section id="model">
+  <h2>3D モデル <small>B · 170 × 110 mm</small></h2>
+  <p>ドラッグで回転、ホイールやピンチで拡大できます。M5Dial とバッテリーは、位置を確かめるための仮の形です (公式データの寸法から作った円柱と箱)。</p>
+  <div class="viewer">
+    <canvas id="viewer3d" aria-label="組み立てたプレートの 3D ビュー。ドラッグで回転"></canvas>
+    <div class="bar">
+      <span class="label">色</span>
+      <div class="seg" role="group" aria-label="造形の色">
+        <button type="button" data-scheme="yb" aria-pressed="true"><span class="sw" style="background:#F7C600"></span>イエロー地 + ブラック文字</button>
+        <button type="button" data-scheme="by" aria-pressed="false"><span class="sw" style="background:#1C1C1C"></span>ブラック地 + イエロー文字</button>
+        <button type="button" data-scheme="gb" aria-pressed="false"><span class="sw" style="background:#8E9094"></span>グレー地 + ブラック文字</button>
+      </div>
+      <span class="label">視点</span>
+      <div class="seg" role="group" aria-label="視点">
+        <button type="button" data-view="front" aria-pressed="false">正面</button>
+        <button type="button" data-view="iso" aria-pressed="true">斜め</button>
+        <button type="button" data-view="side" aria-pressed="false">横</button>
+        <button type="button" data-view="back" aria-pressed="false">背面</button>
+      </div>
+      <div class="seg" role="group" aria-label="仮の形の表示">
+        <button type="button" id="toggle-dummy" aria-pressed="true">M5Dial・バッテリーを表示</button>
+      </div>
+    </div>
+    <p class="status" id="viewer-status">読み込み中…</p>
+  </div>
+  <div class="front-img"><img src="preview_front.png" alt="プレートの正面図。左に M5Dial と回す矢印、右に MAKER CALL のドット見出し、説明、3ステップ"></div>
+  <p class="note">提案から変えた点:見出しのドットは右端に収まるよう間隔を詰めた (はみ出していたため)。3ステップは横3列だと「制作者の iPhone に届く」が 2.5 mm と小さく潰れるので、右の列に縦3行で並べた (日本語 4.5 mm、英語 3 mm)。</p>
+</section>
+
+<section id="parts">
+  <h2>部品と造形 <small>parts</small></h2>
+  <div class="scroll">
+    <table>
+      <thead><tr><th>ファイル</th><th>大きさ</th><th>数</th><th>色</th><th>造形</th></tr></thead>
+      <tbody>
+        <tr><th><code>plate_base.stl</code><br><code>plate_raised.stl</code></th><td class="n">170 × 110 × 4.7<br>+ 盛り上げ 0.8</td><td>1</td><td>2色 (地 / 文字)</td><td>表を上にして平らに。Bambu Studio で2つを「1つのオブジェクトの複数パーツ」として読み込み、色を割り当てる。色が替わるのは高さ 4.7 mm の1回だけ</td></tr>
+        <tr><th><code>clamp_ring.stl</code></th><td class="n">Ø66 × 3</td><td>1</td><td>グレー</td><td>平らに。サポート不要</td></tr>
+        <tr><th><code>foot.stl</code></th><td class="n">20 × 92 × 17.8</td><td>2</td><td>グレー</td><td>そのままの向きで (底が平ら)。サポート不要</td></tr>
+        <tr><th><code>oyobidashi_plate.step</code></th><td colspan="4">組み立てた状態の STEP。寸法の確認や、Rhino などでの手直しに</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p class="note">目安の設定:ノズル 0.4 mm、積層 0.2 mm (盛り上げは4層)、壁 3周、インフィル 15%。ファイルは <code>plate/out/</code>、作り直しは <code>plate/make_plate.py</code> (寸法はファイルの先頭にまとめてある)。</p>
+</section>
+
+<section id="assemble">
+  <h2>組み立て <small>assembly</small></h2>
+  <ol class="steps">
+    <li>M5Dial を、USB-C を下にして前から穴に差し込む<span>回らない縁 (フランジ) が穴にはまり、裏へ 0.3 mm 出る</span></li>
+    <li>裏から押さえのリングを当てて、M3 × 8 mm のねじ3本で留める<span>下穴 Ø2.6 にねじを直接ねじ込む。リングの真下の切り欠きから USB-C ケーブルを出す</span></li>
+    <li>USB-C ケーブルをバッテリーへつなぎ、バッテリーをプレートの裏の右側に両面テープで貼る</li>
+    <li>左右の足の溝に、プレートの下の辺を差し込む<span>後ろへ 18° 傾いて立つ</span></li>
+    <li>担当者メニューの「画面の向き」で、画面が正面を向くように 10° 刻みで合わせる</li>
+  </ol>
+</section>
+
+<section id="check">
+  <h2>確かめたいこと <small>before printing</small></h2>
+  <ol class="asks">
+    <li><b>色の組み合わせ</b><span>上のビューアで3通りを比べられます。足と押さえのリングはグレーを想定しています</span></li>
+    <li><b>回らない縁の確認</b><span>公式データから「前面のリングだけが回り、その後ろの縁 (Ø50.9、奥行 4.5 mm) は回らない」と読み取りました。実物で、後ろの縁を押さえてもリングが回るか確かめてください。回る部分を押さえてしまうと、ダイヤルが使えなくなります</span></li>
+    <li><b>はまり具合の試し造形</b><span>穴 Ø51.5 と押さえのリング内径 Ø44.8 は、公式データからの値です。先にリングだけを造形して M5Dial に当ててみると、プレート全体を造形し直さずに調整できます</span></li>
+    <li><b>強く押したときの安定</b><span>画面の押し込みは重いので、強く押すと後ろへ倒れる可能性があります。足の裏に滑り止めや両面テープを貼ると安心です。足をもっと後ろへ伸ばすこともできます</span></li>
+    <li><b>ねじ</b><span>M3 × 8 mm を3本使います。手持ちがなければ、押さえのリングを接着する形にも変えられます</span></li>
+  </ol>
+</section>
+
+<section id="facts">
+  <h2>前提 <small>facts</small></h2>
+  <div class="scroll">
+    <table>
+      <thead><tr><th>もの</th><th>寸法</th><th>設計で気をつけること</th></tr></thead>
+      <tbody>
+        <tr><th>M5Dial 全体</th><td class="n">Ø51.0 × 奥行 32.3 mm</td><td>公式データ (Dial.stl) と公式仕様から。46 g</td></tr>
+        <tr><th>回るリング (前面)</th><td class="n">Ø49.7、奥行 約10 mm</td><td>製品カードと担当者メニューで回すので、指でつまめるように前に出す</td></tr>
+        <tr><th>回らないフランジ</th><td class="n">Ø50.9、奥行 約4 mm</td><td>ここを後ろから受けて、押されたときの力を支える</td></tr>
+        <tr><th>背面の本体</th><td class="n">Ø44、奥行 約12 mm</td><td>プレートの裏に出る。USB-C と端子の位置は実物で確認が必要</td></tr>
+        <tr><th>モバイルバッテリー</th><td class="n">92 × 60 × 22 mm、約180 g</td><td>Anker PowerCore 10000 (A1263)。背面に両面テープ。重りにもなる</td></tr>
+        <tr><th>A1 mini</th><td class="n">180 × 180 × 180 mm、4色まで</td><td>今回は2色。平らな板を、表を下にして造形すると文字がきれい</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section id="concepts">
+  <h2>検討した3つの方向 <small>B に決定</small></h2>
+  <p>どの案も、文言の役割は同じです。遠くから「何のプレートか」を伝える見出し、近づいた人への一文と3ステップ、M5Dial のまわりの「回せる」サインです。見出しの英語は、画面と同じ 5×7 のドットで描きます。dotting dots のドットとして、2色目でくっきり出ます。</p>
+  <div class="toolbar">
+    <span class="label">プレートの色</span>
+    <div class="seg" role="group" aria-label="プレートの色">
+      <button type="button" data-color="orange" aria-pressed="true"><span class="sw" style="background:var(--pla-orange)"></span>オレンジ地 + 黒文字</button>
+      <button type="button" data-color="black" aria-pressed="false"><span class="sw" style="background:var(--pla-black)"></span>黒地 + 白文字</button>
+    </div>
+  </div>
+  <div class="concepts">
+    <article class="concept">
+      <h3>A. 縦長の看板</h3>
+      <div class="size">120 × 170 mm · 厚さ 4 mm</div>
+      <div class="stage"><svg id="svgA" class="plate-svg" viewBox="-14 -12 148 200" aria-label="縦長の看板の正面図"></svg></div>
+      <ul><li>上から順に読める、いちばん素直な看板</li><li>3ステップを大きく入れられる</li><li>背が高いので、立てると少しぐらつきやすい</li></ul>
+    </article>
+    <article class="concept">
+      <h3>B. 横長のサイン</h3>
+      <div class="size">170 × 110 mm · 厚さ 4 mm</div>
+      <div class="stage"><svg id="svgB" class="plate-svg" viewBox="-14 -12 198 140" aria-label="横長のサインの正面図"></svg></div>
+      <ul><li>背が低く安定する。机の手前に置いても視線をさえぎらない</li><li>左に M5Dial、右に説明。視線の流れが自然</li><li>バッテリーを M5Dial の右の裏に貼れる</li></ul>
+    </article>
+    <article class="concept rec">
+      <span class="badge">おすすめ</span>
+      <h3>C. 丸いバッジ</h3>
+      <div class="size">Ø150 mm (下を平らに) · 厚さ 4 mm</div>
+      <div class="stage"><svg id="svgC" class="plate-svg" viewBox="-14 -12 178 180" aria-label="丸いバッジの正面図"></svg></div>
+      <ul><li>画面の外周の60個のドットが、プレートまで広がったような形。画面とプレートが1つの道具に見える</li><li>ダイヤルの「回せる」サインを、円に沿って自然に入れられる</li><li>文字の量は少なめ。説明は一文と3ステップに絞る</li></ul>
+    </article>
+  </div>
+  <p class="note">色の比較:オレンジ地は、待機画面の「オレンジ = 触れる番」をプレート全体に広げる案です。遠くから目に入り、プレートごとボタンに見えます。黒地は、M5Dial の黒いリングと一体に見え、落ち着いた印象です。</p>
+</section>
+
+<section id="side">
+  <h2>立て方とバッテリー <small>side view</small></h2>
+  <p>プレートは平らな板として造形し、裏に差し込む脚 (別に平らに造形) で後ろへ18°傾けて立てます。M5Dial は前からリングを出し、フランジを裏の受けで支えて、裏から押さえのリングでとめます。触れたときに後ろへ押されても、脚とバッテリーの重さで倒れにくくなります。</p>
+  <div class="section-fig"><svg id="svgSide" viewBox="0 0 300 140" aria-label="横から見た図。プレートが18度傾き、裏に脚とバッテリーがある"></svg></div>
+  <div class="scroll">
+    <table>
+      <thead><tr><th>部品</th><th>造形</th><th>役割</th></tr></thead>
+      <tbody>
+        <tr><th>プレート</th><td>表を下にして平らに。2色 (文字は表面から 0.6 mm 埋め込み)</td><td>看板。M5Dial の穴と、裏の受けのリングを一体で</td></tr>
+        <tr><th>押さえのリング</th><td>平らに、1色</td><td>M5Dial を裏からはさんで固定。ねじ2本か、回して締めるツメ</td></tr>
+        <tr><th>脚</th><td>平らに、1色</td><td>裏の溝に差し込んで18°に立てる。外せば平らにしまえる</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section id="copy">
+  <h2>文言の案 <small>copy</small></h2>
+  <div class="scroll">
+    <table>
+      <thead><tr><th>場所</th><th>日本語</th><th>英語</th></tr></thead>
+      <tbody>
+        <tr><th>見出し (ドット)</th><td>−</td><td>MAKER CALL</td></tr>
+        <tr><th>一文</th><td>制作者が席を外しているときは、画面にタッチしてください</td><td>Tap the screen to call the maker</td></tr>
+        <tr><th>3ステップ</th><td>1 タッチ / 2 制作者の iPhone に届く / 3 画面でお知らせ</td><td>Tap / We get notified / Check the screen</td></tr>
+        <tr><th>ダイヤルのサイン</th><td>回すと製品が見られます</td><td>Turn to browse</td></tr>
+        <tr><th>ブランド</th><td>−</td><td>dotting dots</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p class="note">2色の造形では、細い線が潰れやすいので、日本語は高さ 5 mm 以上、英語の小さな文字は 3.5 mm 以上を目安にしています。</p>
+</section>
+
+</div>
+
+<script src="plate-model.js"></script>
+<script type="module">
+import * as THREE from 'three';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+
+const status = document.getElementById('viewer-status');
+const canvas = document.getElementById('viewer3d');
+try {
+  const data = window.PLATE_MODEL;
+  if (!data) throw new Error('model data not found');
+  const renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
+  renderer.setPixelRatio(window.devicePixelRatio || 1);
+  const scene = new THREE.Scene();
+  const bg = getComputedStyle(document.documentElement).getPropertyValue('--surface').trim() || '#ffffff';
+  scene.background = new THREE.Color(bg);
+  const camera = new THREE.PerspectiveCamera(30, 16 / 10, 1, 5000);
+  const controls = new OrbitControls(camera, canvas);
+  controls.enableDamping = true;
+  const target = new THREE.Vector3(85, 45, -30);
+  controls.target.copy(target);
+  scene.add(new THREE.HemisphereLight(0xffffff, 0x8a8a8a, 1.6));
+  const sun = new THREE.DirectionalLight(0xffffff, 1.6); sun.position.set(-150, 260, 220); scene.add(sun);
+  const fill = new THREE.DirectionalLight(0xffffff, 0.6); fill.position.set(220, 120, -200); scene.add(fill);
+  const grid = new THREE.GridHelper(400, 40, 0xbbbbbb, 0xdddddd); grid.position.set(85, 0, -30); scene.add(grid);
+
+  const b64 = (s) => Uint8Array.from(atob(s), (c) => c.charCodeAt(0)).buffer;
+  const meshes = data.map((p) => {
+    const g = new THREE.BufferGeometry();
+    g.setAttribute('position', new THREE.BufferAttribute(new Float32Array(b64(p.pos)), 3));
+    g.setIndex(new THREE.BufferAttribute(new Uint32Array(b64(p.idx)), 1));
+    g.computeVertexNormals();
+    const m = new THREE.Mesh(g, new THREE.MeshStandardMaterial({ color: p.color, roughness: 0.75, metalness: 0, flatShading: true }));
+    m.userData.name = p.name;
+    scene.add(m);
+    return m;
+  });
+  const byName = (n) => meshes.filter((m) => m.userData.name === n);
+  const SCHEMES = { yb: ['#F7C600', '#1C1C1C'], by: ['#1C1C1C', '#F7C600'], gb: ['#8E9094', '#1C1C1C'] };
+  const setScheme = (k) => {
+    byName('plate').forEach((m) => m.material.color.set(SCHEMES[k][0]));
+    byName('raised').forEach((m) => m.material.color.set(SCHEMES[k][1]));
+  };
+  document.querySelectorAll('[data-scheme]').forEach((b) => b.addEventListener('click', () => {
+    document.querySelectorAll('[data-scheme]').forEach((x) => x.setAttribute('aria-pressed', String(x === b)));
+    setScheme(b.dataset.scheme);
+  }));
+  const VIEWS = { front: [85, 70, 330], iso: [-150, 170, 260], side: [-380, 60, -20], back: [300, 170, -330] };
+  const setView = (k) => { camera.position.set(...VIEWS[k]); controls.target.copy(target); controls.update(); };
+  document.querySelectorAll('[data-view]').forEach((b) => b.addEventListener('click', () => {
+    document.querySelectorAll('[data-view]').forEach((x) => x.setAttribute('aria-pressed', String(x === b)));
+    setView(b.dataset.view);
+  }));
+  const dummyBtn = document.getElementById('toggle-dummy');
+  dummyBtn.addEventListener('click', () => {
+    const on = dummyBtn.getAttribute('aria-pressed') !== 'true';
+    dummyBtn.setAttribute('aria-pressed', String(on));
+    meshes.filter((m) => /device|screen|battery/.test(m.userData.name)).forEach((m) => { m.visible = on; });
+  });
+  setView('iso');
+  const resize = () => {
+    const w = canvas.clientWidth, h = canvas.clientHeight;
+    renderer.setSize(w, h, false); camera.aspect = w / h; camera.updateProjectionMatrix();
+  };
+  new ResizeObserver(resize).observe(canvas); resize();
+  renderer.setAnimationLoop(() => { controls.update(); renderer.render(scene, camera); });
+  status.textContent = '黄色 = プレート、黒 = 盛り上げた文字、グレー = 押さえのリングと足、濃いグレー = M5Dial とバッテリー (仮の形)';
+} catch (e) {
+  status.textContent = '3D ビューを表示できませんでした: ' + e.message;
+}
+</script>
+
+<script>
+(() => {
+  const NS = 'http://www.w3.org/2000/svg';
+  // 5x7 ドット文字（画面と同じ）
+  const G = {
+    A: [14, 17, 17, 31, 17, 17, 17], C: [14, 17, 16, 16, 16, 17, 14], E: [31, 16, 16, 30, 16, 16, 31],
+    K: [17, 18, 20, 24, 20, 18, 17], L: [16, 16, 16, 16, 16, 16, 31], M: [17, 27, 21, 21, 17, 17, 17],
+    R: [30, 17, 17, 30, 20, 18, 17], ' ': [0, 0, 0, 0, 0, 0, 0],
+  };
+  const el = (tag, attrs, parent) => { const e = document.createElementNS(NS, tag); for (const k in attrs) e.setAttribute(k, attrs[k]); if (parent) parent.appendChild(e); return e; };
+  const txt = (parent, s, x, y, size, weight = 700, anchor = 'middle', cls = 'ink') => { const t = el('text', { x, y, 'font-size': size, 'font-weight': weight, 'text-anchor': anchor, class: cls, 'dominant-baseline': 'middle' }, parent); t.textContent = s; return t; };
+  function dotWord(parent, word, cx, cy, pitch, anchor = 'middle') {
+    const cols = word.length * 6 - 1;
+    const x0 = anchor === 'middle' ? cx - (cols - 1) * pitch / 2 : cx;
+    [...word].forEach((ch, i) => {
+      const g = G[ch]; if (!g) return;
+      for (let r = 0; r < 7; r++) for (let c = 0; c < 5; c++) if ((g[r] >> (4 - c)) & 1) el('circle', { cx: x0 + (i * 6 + c) * pitch, cy: cy - 3 * pitch + r * pitch, r: pitch * 0.42, class: 'ink' }, parent);
+    });
+  }
+  // M5Dial（正面）。画面は待機画面のオレンジ
+  function dial(parent, cx, cy) {
+    el('circle', { cx, cy, r: 24.85, class: 'bezel' }, parent);
+    for (let i = 0; i < 72; i++) { const a = i / 72 * Math.PI * 2; el('line', { x1: cx + 21.5 * Math.cos(a), y1: cy + 21.5 * Math.sin(a), x2: cx + 24.6 * Math.cos(a), y2: cy + 24.6 * Math.sin(a), class: 'bezel-hi', 'stroke-width': .35 }, parent); }
+    el('circle', { cx, cy, r: 16.2, class: 'screen' }, parent);
+    const t = el('text', { x: cx, y: cy - 1.5, 'font-size': 5.2, 'font-weight': 700, 'text-anchor': 'middle', class: 'screen-ink', 'dominant-baseline': 'middle', 'font-family': 'DotGothic16' }, parent); t.textContent = 'TAP';
+    const t2 = el('text', { x: cx, y: cy + 4.5, 'font-size': 2.2, 'font-weight': 700, 'text-anchor': 'middle', class: 'screen-ink', 'dominant-baseline': 'middle' }, parent); t2.textContent = '制作者と話してみたい！';
+  }
+  // ダイヤルの「回せる」サイン：M5Dial のまわりの時計回りの弧の矢印
+  function turnHint(parent, cx, cy, r, a0, a1, label, labelAt) {
+    const p = (a) => [cx + r * Math.cos(a * Math.PI / 180), cy + r * Math.sin(a * Math.PI / 180)];
+    const [x0, y0] = p(a0), [x1, y1] = p(a1);
+    el('path', { d: `M${x0} ${y0} A${r} ${r} 0 ${a1 - a0 > 180 ? 1 : 0} 1 ${x1} ${y1}`, class: 'ink-stroke', 'stroke-width': 1.6, 'stroke-linecap': 'round' }, parent);
+    const t = (a1 + 7) * Math.PI / 180, b = a1 * Math.PI / 180;
+    el('path', { d: `M${cx + (r - 3) * Math.cos(b)} ${cy + (r - 3) * Math.sin(b)} L${cx + (r + 3) * Math.cos(b)} ${cy + (r + 3) * Math.sin(b)} L${cx + r * Math.cos(t)} ${cy + r * Math.sin(t)} Z`, class: 'ink' }, parent);
+    if (label) { txt(parent, label[0], labelAt[0], labelAt[1], 3.6, 700, labelAt[2] || 'middle'); txt(parent, label[1], labelAt[0], labelAt[1] + 4.6, 2.8, 400, labelAt[2] || 'middle'); }
+  }
+  function steps(parent, x, y, w, size) {
+    const items = [['1', 'タッチ', 'Tap'], ['2', '制作者の iPhone に届く', 'We get notified'], ['3', '画面でお知らせ', 'Check the screen']];
+    const col = w / 3;
+    items.forEach(([n, ja, en], i) => {
+      const cx = x + col * i + col / 2;
+      el('circle', { cx, cy: y, r: size * 0.95, class: 'ink' }, parent);
+      const t = el('text', { x: cx, y: y + .2, 'font-size': size * 1.1, 'font-weight': 900, 'text-anchor': 'middle', 'dominant-baseline': 'middle', class: 'base' }, parent); t.textContent = n;
+      txt(parent, ja, cx, y + size * 2.4, size * (ja.length > 8 ? 0.62 : 0.85), 700);
+      txt(parent, en, cx, y + size * 3.6, size * 0.6, 400);
+    });
+  }
+  function dims(svg, x0, y0, x1, y1, label, horizontal) {
+    if (horizontal) {
+      el('path', { d: `M${x0} ${y0 - 6} V${y0 - 2} M${x1} ${y0 - 6} V${y0 - 2} M${x0} ${y0 - 4} H${x1}`, class: 'dimline' }, svg);
+      const t = el('text', { x: (x0 + x1) / 2, y: y0 - 6.5, 'text-anchor': 'middle', class: 'dimtext' }, svg); t.textContent = label;
+    } else {
+      el('path', { d: `M${x0 - 6} ${y0} H${x0 - 2} M${x0 - 6} ${y1} H${x0 - 2} M${x0 - 4} ${y0} V${y1}`, class: 'dimline' }, svg);
+      const t = el('text', { x: x0 - 7, y: (y0 + y1) / 2, 'text-anchor': 'middle', class: 'dimtext', transform: `rotate(-90 ${x0 - 7} ${(y0 + y1) / 2})` }, svg); t.textContent = label;
+    }
+  }
+
+  // ---- A. 縦長 120 x 170 ----
+  (() => {
+    const s = document.getElementById('svgA');
+    el('rect', { x: 0, y: 0, width: 120, height: 170, rx: 8, class: 'base' }, s);
+    dotWord(s, 'MAKER', 60, 16, 2.1); dotWord(s, 'CALL', 60, 33, 2.1);
+    txt(s, '制作者が席を外しているときは、', 60, 48, 5.2, 700);
+    txt(s, '画面にタッチしてください', 60, 55.5, 5.2, 700);
+    txt(s, 'Tap the screen to call the maker', 60, 62, 3.6, 400);
+    dial(s, 60, 96);
+    turnHint(s, 60, 96, 30, -20, 40, ['回すと製品が見られます', 'Turn to browse'], [93, 128, 'end']);
+    steps(s, 6, 143, 108, 4.4);
+    txt(s, 'dotting dots', 60, 164, 3.4, 400);
+    dims(s, 0, 0, 120, 0, '120', true); dims(s, 0, 0, 0, 170, '170', false);
+  })();
+
+  // ---- B. 横長 170 x 110 ----
+  (() => {
+    const s = document.getElementById('svgB');
+    el('rect', { x: 0, y: 0, width: 170, height: 110, rx: 8, class: 'base' }, s);
+    dial(s, 42, 52);
+    turnHint(s, 42, 52, 30, 120, 190, null);
+    txt(s, '回すと製品が見られます', 42, 92, 3.6, 700); txt(s, 'Turn to browse', 42, 96.8, 2.8, 400);
+    dotWord(s, 'MAKER CALL', 79, 16, 1.62, 'start');
+    txt(s, '制作者が席を外しているときは、', 79, 32, 5, 700, 'start');
+    txt(s, '画面にタッチしてください', 79, 39.5, 5, 700, 'start');
+    txt(s, 'Tap the screen to call the maker', 79, 46, 3.4, 400, 'start');
+    steps(s, 77, 65, 88, 4);
+    txt(s, 'dotting dots', 164, 102, 3.2, 400, 'end');
+    dims(s, 0, 0, 170, 0, '170', true); dims(s, 0, 0, 0, 110, '110', false);
+  })();
+
+  // ---- C. 丸いバッジ Ø150（下を平らに） ----
+  (() => {
+    const s = document.getElementById('svgC');
+    const cx = 75, cy = 75, R = 75, flat = 140;
+    const dx = Math.sqrt(R * R - (flat - cy) * (flat - cy));
+    el('path', { d: `M${cx - dx} ${flat} A${R} ${R} 0 1 1 ${cx + dx} ${flat} Z`, class: 'base' }, s);
+    // 画面の外周ドットがプレートまで広がったような輪
+    for (let i = 0; i < 60; i++) { const a = -Math.PI / 2 + i * Math.PI * 2 / 60; if (i > 23 && i < 37) continue; el('circle', { cx: cx + 66 * Math.cos(a), cy: cy + 66 * Math.sin(a), r: 1.3, class: 'ink' }, s); }
+    dotWord(s, 'MAKER CALL', cx, 22, 1.55);
+    txt(s, '制作者が席を外しているときは、', cx, 36, 4.6, 700);
+    txt(s, '画面にタッチしてください', cx, 42.5, 4.6, 700);
+    dial(s, cx, 78);
+    turnHint(s, cx, 78, 31, -30, 30, null);
+    turnHint(s, cx, 78, 31, 150, 210, null);
+    txt(s, '回す', cx + 40, 78, 3.4, 700); txt(s, 'Turn', cx + 40, 82.5, 2.6, 400);
+    txt(s, '回す', cx - 40, 78, 3.4, 700); txt(s, 'Turn', cx - 40, 82.5, 2.6, 400);
+    txt(s, 'タッチ → 制作者の iPhone に届く → 画面でお知らせ', cx, 116, 3.3, 700);
+    txt(s, 'Tap → We get notified → Check the screen', cx, 121.5, 2.6, 400);
+    txt(s, 'dotting dots', cx, 132, 3, 400);
+    dims(s, 0, 0, 150, 0, 'Ø150', true); dims(s, 0, 0, 0, flat, '140', false);
+  })();
+
+  // ---- 横から見た図 ----
+  (() => {
+    const s = document.getElementById('svgSide');
+    const css = getComputedStyle(document.documentElement);
+    const c = (k) => css.getPropertyValue(k).trim();
+    const desk = 120;
+    el('line', { x1: 10, y1: desk, x2: 290, y2: desk, stroke: c('--dim'), 'stroke-width': .6 }, s);
+    // プレート（Bの高さ 110 mm を 18° 傾ける。縮尺 0.8）
+    const k = 0.8, H = 110 * k, T = 4 * k, ang = 18 * Math.PI / 180;
+    const bx = 120, by = desk;
+    const ux = Math.sin(ang), uy = -Math.cos(ang); // 上向き（後ろに倒れる）
+    const nx = Math.cos(ang), ny = Math.sin(ang);   // 背面の向き
+    const P = (u, n) => [bx + ux * u + nx * n, by + uy * u + ny * n];
+    const poly = (pts, fill, op = 1) => el('polygon', { points: pts.map((p) => p.join(',')).join(' '), fill, opacity: op }, s);
+    poly([P(0, 0), P(H, 0), P(H, T), P(0, T)], c('--pla-orange'));
+    // M5Dial（高さ 52 mm の位置、前にリング、後ろに本体）
+    const du = 52 * k;
+    poly([P(du - 25 * k, -12 * k), P(du + 25 * k, -12 * k), P(du + 25 * k, 0), P(du - 25 * k, 0)], c('--dev-bezel'));
+    poly([P(du - 25 * k, T), P(du + 25 * k, T), P(du + 25 * k, T + 4 * k), P(du - 25 * k, T + 4 * k)], c('--dev-bezel-hi'));
+    poly([P(du - 22 * k, T + 4 * k), P(du + 22 * k, T + 4 * k), P(du + 22 * k, T + 16 * k), P(du - 22 * k, T + 16 * k)], c('--dev-bezel'));
+    // 押さえのリング
+    poly([P(du - 28 * k, T), P(du - 23 * k, T), P(du - 23 * k, T + 6 * k), P(du - 28 * k, T + 6 * k)], c('--pla-black'));
+    poly([P(du + 23 * k, T), P(du + 28 * k, T), P(du + 28 * k, T + 6 * k), P(du + 23 * k, T + 6 * k)], c('--pla-black'));
+    // バッテリー（下の方に貼る、厚さ 22 mm）
+    poly([P(6 * k, T), P(6 * k + 60 * k * 0.0 + 22 * k * 0, T), P(6 * k, T)], c('--battery'));
+    poly([P(4 * k, T), P(26 * k, T), P(26 * k, T + 22 * k), P(4 * k, T + 22 * k)], c('--battery'));
+    // 脚（背面の溝から机へ）
+    const [lx, ly] = P(80 * k, T);
+    el('line', { x1: lx, y1: ly, x2: lx + 46, y2: desk, stroke: c('--pla-black'), 'stroke-width': 3.2, 'stroke-linecap': 'round' }, s);
+    // ケーブル
+    const [cxx, cyy] = P(du - 18 * k, T + 16 * k), [bxx, byy] = P(15 * k, T + 22 * k);
+    el('path', { d: `M${cxx} ${cyy} C ${cxx + 18} ${cyy + 10}, ${bxx + 20} ${byy - 10}, ${bxx} ${byy}`, stroke: c('--dim'), 'stroke-width': 1.2, fill: 'none', 'stroke-dasharray': '2 1.5' }, s);
+    // 注記
+    const note = (x, y, t2, anchor = 'start') => { const t = el('text', { x, y, 'font-size': 6, fill: c('--fg'), 'text-anchor': anchor, 'font-family': 'IBM Plex Sans JP, sans-serif' }, s); t.textContent = t2; };
+    const [fx, fy] = P(du, -12 * k);
+    note(fx - 8, fy - 6, '回るリング (前に出す)', 'end');
+    note(P(H, 0)[0] - 4, P(H, 0)[1] - 4, 'プレート 4 mm', 'end');
+    note(lx + 50, desk - 22, '脚 (差し込み)');
+    note(P(4 * k, T + 22 * k)[0] + 10, desk - 4, 'バッテリー');
+    note(P(du + 28 * k, T + 6 * k)[0] + 6, P(du + 28 * k, T + 6 * k)[1], '押さえのリング');
+    const t = el('text', { x: bx + 6, y: desk - 6, 'font-size': 6, fill: c('--accent'), 'font-family': 'IBM Plex Mono, monospace' }, s); t.textContent = '18°';
+    note(20, 18, '← 前 (来場者)');
+  })();
+
+  // ---- 色の切り替え ----
+  const btns = document.querySelectorAll('[data-color]');
+  btns.forEach((b) => b.addEventListener('click', () => {
+    btns.forEach((x) => x.setAttribute('aria-pressed', String(x === b)));
+    document.querySelectorAll('.plate-svg').forEach((s) => s.setAttribute('data-color', b.dataset.color));
+  }));
+})();
+</script>
