@@ -27,6 +27,7 @@
 #include <WiFiClientSecure.h>
 
 #include "certs.h"
+#include "fonts_noto.h"  // tools/make_vlw.py で生成（画面の文言を変えたら作り直す）
 
 #if __has_include("secrets.h")
 #include "secrets.h"
@@ -147,6 +148,10 @@ enum class Reply { None, Coming, Back5, Back30 };
 M5Canvas canvas(&M5Dial.Display);
 Preferences prefs;
 
+// Noto Sans JP のなめらかフォント（見出し / 小見出し / 補足 / 英語・時間）
+lgfx::PointerWrapper fontData[4];
+lgfx::VLWfont fonts[4];
+
 State state = State::Idle;
 uint32_t stateSinceMs = 0;
 bool hasConfig = false;
@@ -177,6 +182,7 @@ int32_t lastEnc = 0;
 int32_t encAcc = 0;
 bool gestureDone = false;
 State stateAtDown = State::Idle;
+bool visitPending = false;  // 不在中に触れた。短く離したら目立たない通知を送る
 
 // ダイヤル
 bool menuOpen = false;
@@ -572,9 +578,6 @@ void awayText(char *buf, size_t n) {
 
 // 不在中に押されたとき：画面で戻り時刻を返し、担当者には目立たない通知を送る
 void onVisitWhileAway(uint32_t now) {
-  char buf[48];
-  awayText(buf, sizeof(buf));
-  toast(buf, now);
   if (visitSent && now - lastVisitMs < VISIT_INTERVAL_MS) return;
   if (pubPending) return;
   visitSent = true;
@@ -605,10 +608,15 @@ void onDown(uint32_t now) {
       play(SND_TICK);
       toast("目の前にいます", now);
       break;
-    case State::Away:
+    case State::Away: {
+      // 通知は離したときに送る（戻ってきた制作者の長押しで、自分宛てに通知が飛ばないように）
       play(SND_TICK);
-      onVisitWhileAway(now);
+      char buf[48];
+      awayText(buf, sizeof(buf));
+      toast(buf, now);
+      visitPending = true;
       break;
+    }
     default:
       play(SND_TICK);
       toast(state == State::Coming ? "もうすぐ着きます" : "もう届いています", now);
@@ -670,6 +678,12 @@ void menuConfirm(uint32_t now) {
 
 // --- 入力 -------------------------------------------------------------------
 
+// 制作者が長押しで待機に戻せる状態か（お待たせの画面からは、触れた瞬間に呼び出し中になっている）
+bool staffResettable() {
+  return state == State::Sent || state == State::Coming || state == State::Away ||
+         (state == State::Calling && !callCommitted && stateAtDown == State::Sorry);
+}
+
 // エンコーダーのカウントをダイヤルの段数に直す
 int takeDetents(int32_t delta) {
   encAcc += delta;
@@ -705,6 +719,19 @@ void updateInput(uint32_t now) {
   } else if (!down && wasDown) {
     wasDown = false;
     if (menuOpen) menuArmed = true;
+    const bool tap = !gestureDone && now - downMs < STAFF_HOLD_START_MS;
+    if (visitPending && state == State::Away && tap) onVisitWhileAway(now);
+    visitPending = false;
+    // お待たせの画面からの呼び出しは、短く触れたときだけ送る（長押しは制作者の操作）
+    if (state == State::Calling && !callCommitted && stateAtDown == State::Sorry && !gestureDone) {
+      if (tap) {
+        callCommitted = true;
+        nextAttemptMs = now;
+      } else {
+        Serial.println("[call] long press from sorry: canceled");
+        setState(State::Sorry, now);
+      }
+    }
   }
 
   // メニューが開いているときは、回すと選ぶ・押すと決める
@@ -720,7 +747,8 @@ void updateInput(uint32_t now) {
   }
 
   // 呼び出しは、離したとき（または押したまま COMMIT_MS たったとき）に送ると決める
-  if (state == State::Calling && !callCommitted && (!down || now - downMs >= COMMIT_MS)) {
+  if (state == State::Calling && !callCommitted && stateAtDown != State::Sorry &&
+      (!down || now - downMs >= COMMIT_MS)) {
     callCommitted = true;
     nextAttemptMs = now;
   }
@@ -739,7 +767,7 @@ void updateInput(uint32_t now) {
       return;
     }
     // 呼び出しのあとの3秒長押し：待機に戻す
-    if ((state == State::Sent || state == State::Coming) && now - downMs >= STAFF_HOLD_MS) {
+    if (staffResettable() && now - downMs >= STAFF_HOLD_MS) {
       gestureDone = true;
       Serial.println("[call] staff hold: back to idle");
       play(SND_RESET);
@@ -921,14 +949,22 @@ void dotWord(const char *word, int cy, float maxW, uint32_t on, uint32_t off) {
 }
 
 // 丸い画面のその高さで収まる幅に合わせてフォントを選び、1行描く
+void loadFonts() {
+  const uint8_t *src[] = {NOTO_BOLD_20, NOTO_BOLD_15, NOTO_REGULAR_13, NOTO_REGULAR_11};
+  const size_t len[] = {sizeof(NOTO_BOLD_20), sizeof(NOTO_BOLD_15), sizeof(NOTO_REGULAR_13),
+                        sizeof(NOTO_REGULAR_11)};
+  for (int i = 0; i < 4; i++) {
+    fontData[i].set(src[i], len[i]);
+    if (!fonts[i].loadFont(&fontData[i])) Serial.printf("[call] font %d load failed\n", i);
+  }
+}
+
 void text(const char *s, int y, int size, uint32_t color) {
-  static const lgfx::IFont *const F[] = {&fonts::lgfxJapanGothicP_20, &fonts::lgfxJapanGothicP_16,
-                                         &fonts::lgfxJapanGothicP_12};
-  const int start = size >= 17 ? 0 : size >= 14 ? 1 : 2;
+  const int start = size >= 17 ? 0 : size >= 14 ? 1 : size >= 12 ? 2 : 3;
   const float dy = y - CY;
   const int maxW = (int)(2 * sqrtf(max(0.0f, 120.0f * 120 - dy * dy))) - 30;
-  for (int i = start; i < 3; i++) {
-    canvas.setFont(F[i]);
+  for (int i = start; i < 4; i++) {
+    canvas.setFont(&fonts[i]);
     if (canvas.textWidth(s) <= maxW) break;
   }
   canvas.setTextColor(c565(color));
@@ -957,6 +993,29 @@ void drawQr(const char *url, int cy, int size) {
 void fmtWait(char *buf, size_t n, uint32_t ms) {
   const unsigned long s = ms / 1000;
   snprintf(buf, n, "お待ち %lu:%02lu", s / 60, s % 60);
+}
+
+// ダイヤルでページが変わることを伝える矢印。左右の縁に、時計回りの短い弧の矢印を描く。
+// ときどき時計回りに少し動かして、回す向きを伝える
+void drawDialHint(uint32_t now, uint32_t color) {
+  const float t = fmodf(now / 1000.0f, 2.4f);
+  const float nudge = t < 0.6f ? 5.0f * sinf(t / 0.6f * PI) : 0;  // 2.4秒ごとに少し動く
+  const uint16_t c = c565(color);
+  for (int side = 0; side < 2; side++) {
+    // LovyanGFX の角度は 3時 = 0度・時計回り。右（3時）と左（9時）
+    const float mid = side == 0 ? 0 : 180;
+    const float a0 = mid - 14 + nudge, a1 = mid + 10 + nudge;
+    if (a0 < 0) {
+      canvas.fillArc(CX, CY, 101, 103, 360 + a0, 360, c);
+      canvas.fillArc(CX, CY, 101, 103, 0, a1, c);
+    } else {
+      canvas.fillArc(CX, CY, 101, 103, a0, a1, c);
+    }
+    // 矢じり（弧の終わりで、時計回りの向き）
+    const float rad = a1 * DEG_TO_RAD, tip = (a1 + 8) * DEG_TO_RAD;
+    canvas.fillTriangle(CX + 97 * cosf(rad), CY + 97 * sinf(rad), CX + 108 * cosf(rad),
+                        CY + 108 * sinf(rad), CX + 102 * cosf(tip), CY + 102 * sinf(tip), c);
+  }
 }
 
 // 製品カード（待っている間にダイヤルでめくる）
@@ -1008,6 +1067,8 @@ void draw(uint32_t now) {
     return;
   }
 
+  const bool cardsAvailable = state == State::Sent || state == State::Coming ||
+                              state == State::Away || state == State::Sorry;
   if (cardIdx > 0) {
     drawCard(cardIdx);
   } else {
@@ -1118,6 +1179,8 @@ void draw(uint32_t now) {
     }
   }
 
+  if (cardsAvailable) drawDialHint(now, K_ACCENT);
+
   // Wi-Fi 未接続（担当者向けの小さな点）
   if (WiFi.status() != WL_CONNECTED) {
     const bool onAccent = cardIdx == 0 && (state == State::Idle || state == State::Failed);
@@ -1134,12 +1197,15 @@ void draw(uint32_t now) {
   }
 
   // 担当者の長押しの進み具合
-  if (wasDown && !gestureDone && (state == State::Sent || state == State::Coming)) {
+  if (wasDown && !gestureDone && staffResettable()) {
     const uint32_t h = now - downMs;
     if (h > STAFF_HOLD_START_MS) {
+      const bool paper = cardIdx > 0 || state == State::Away ||
+                         (state == State::Sent && now - callMs >= QR_AFTER_MS);
+      const uint32_t c = paper ? K_PAPER_FG : K_FG;
       arcFromTop(110, 115,
-                 360.0f * (h - STAFF_HOLD_START_MS) / (STAFF_HOLD_MS - STAFF_HOLD_START_MS), K_FG);
-      text("長押しで待機に戻す", 214, 10, K_FG);
+                 360.0f * (h - STAFF_HOLD_START_MS) / (STAFF_HOLD_MS - STAFF_HOLD_START_MS), c);
+      text("長押しで待機に戻す", 214, 10, c);
     }
   }
 
@@ -1159,6 +1225,7 @@ void setup() {
 
   canvas.setColorDepth(16);
   canvas.createSprite(240, 240);
+  loadFonts();
 
   hasConfig = strlen(WIFI_SSID) > 0 && strlen(NTFY_TOPIC) > 0;
   snprintf(replyTopic, sizeof(replyTopic), "%s%s", NTFY_TOPIC, REPLY_SUFFIX);
