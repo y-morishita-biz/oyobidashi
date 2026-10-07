@@ -12,7 +12,7 @@
 ## iPhone 側の設定
 
 1. App Store で [ntfy](https://apps.apple.com/jp/app/ntfy/id1625396347) を入れる
-2. アプリを開き、右上の「+」からトピックを購読する。サーバーは ntfy.sh のまま、トピック名に `secrets.h` の `NTFY_TOPIC` を入れる
+2. アプリを開き、右上の「+」からトピックを購読する。トピック名に `secrets.h` の `NTFY_TOPIC` を入れる。「Use another server」はオフのまま(ntfy.sh を使う)
 3. 通知を許可する
 
 ## 動き
@@ -25,7 +25,7 @@
 | 送信失敗 | 通信できませんでした | もう一度押すと再送。15秒たつと待機に戻る |
 
 - Wi-Fi が切れると画面の下に「Wi-Fi 未接続」と出る。自動で接続し直す
-- 通知の文言は `src/main.cpp` の先頭(`NOTIFY_TITLE` / `NOTIFY_MESSAGE`)にある
+- 通知の文言は `src/main.cpp` の先頭(`NOTIFY_TITLE` / `NOTIFY_MESSAGE`)にある。本文の後ろには押された時刻が付く(例:「話を聞きたい人がいます！(10:42)」)。時刻は Wi-Fi につながったときにインターネット(NTP)から合わせ、まだ合っていなければ時刻なしで送る
 - 画面のレイアウトと文言は仮。デザインが決まったら作り直す
 
 ## 配線

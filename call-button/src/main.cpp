@@ -36,7 +36,7 @@ namespace {
 // --- 通知の内容 -------------------------------------------------------------
 constexpr const char *NTFY_URL = "https://ntfy.sh/";
 constexpr const char *NOTIFY_TITLE = "ブースで呼ばれています";
-constexpr const char *NOTIFY_MESSAGE = "話を聞きたい人がいます！";
+constexpr const char *NOTIFY_MESSAGE = "話を聞きたい人がいます！";  // 後ろに押された時刻 (10:42) を付ける
 constexpr int NOTIFY_PRIORITY = 5;      // 1〜5。5 が最も目立つ
 constexpr const char *NOTIFY_TAG = "bell";  // 🔔
 
@@ -48,6 +48,11 @@ constexpr uint32_t WIFI_RETRY_MS = 30 * 1000;     // 切れたままのとき接
 constexpr uint32_t HTTP_TIMEOUT_MS = 10 * 1000;
 constexpr uint32_t DEBOUNCE_MS = 30;              // BIG スイッチのチャタリング対策
 constexpr uint32_t DRAW_INTERVAL_MS = 50;
+
+// --- 時刻（押された時刻を通知に載せるため、Wi-Fi につながったら NTP で合わせる） ---
+constexpr const char *TZ_JST = "JST-9";
+constexpr const char *NTP_SERVER1 = "ntp.nict.jp";
+constexpr const char *NTP_SERVER2 = "pool.ntp.org";
 
 // --- ピン -------------------------------------------------------------------
 constexpr int PIN_BIG_SWITCH = 1;  // PORT.B の G1
@@ -71,6 +76,7 @@ M5Canvas canvas(&M5Dial.Display);
 State state = State::Idle;
 uint32_t stateSinceMs = 0;
 volatile int sendResult = 0;  // 送信タスクの結果。0: 送信中 / 1: 成功 / -1: 失敗
+char pressedAt[8] = "";       // 押された時刻 "10:42"。時刻が合っていなければ空
 
 bool hasConfig = false;
 bool wasConnected = false;
@@ -113,6 +119,7 @@ void updateWifi(uint32_t now) {
     if (connected) {
       Serial.printf("[call] wifi connected, ip %s, rssi %d\n", WiFi.localIP().toString().c_str(),
                     WiFi.RSSI());
+      configTzTime(TZ_JST, NTP_SERVER1, NTP_SERVER2);
     } else {
       Serial.println("[call] wifi disconnected");
     }
@@ -140,11 +147,19 @@ bool publish() {
     delay(100);
   }
 
-  char body[256];
+  // 時刻が分からないときは、時刻なしで送る（送れないよりよい）
+  char message[96];
+  if (pressedAt[0]) {
+    snprintf(message, sizeof(message), "%s(%s)", NOTIFY_MESSAGE, pressedAt);
+  } else {
+    snprintf(message, sizeof(message), "%s", NOTIFY_MESSAGE);
+  }
+
+  char body[320];
   snprintf(body, sizeof(body),
            "{\"topic\":\"%s\",\"title\":\"%s\",\"message\":\"%s\",\"priority\":%d,"
            "\"tags\":[\"%s\"]}",
-           NTFY_TOPIC, NOTIFY_TITLE, NOTIFY_MESSAGE, NOTIFY_PRIORITY, NOTIFY_TAG);
+           NTFY_TOPIC, NOTIFY_TITLE, message, NOTIFY_PRIORITY, NOTIFY_TAG);
 
   WiFiClientSecure client;
   client.setCACert(NTFY_ROOT_CA);
@@ -177,6 +192,15 @@ void onPress(uint32_t now, const char *source) {
   Serial.printf("[call] pressed (%s) in %s\n", source, stateName(state));
   if (state == State::Sending || state == State::Called) return;  // 連打対策
   if (!hasConfig) return;
+
+  struct tm t;
+  if (getLocalTime(&t, 0)) {
+    strftime(pressedAt, sizeof(pressedAt), "%H:%M", &t);
+  } else {
+    pressedAt[0] = '\0';
+  }
+  Serial.printf("[call] pressed at %s\n", pressedAt[0] ? pressedAt : "(time unknown)");
+
   sendResult = 0;
   setState(State::Sending, now);
   xTaskCreatePinnedToCore(sendTask, "ntfy", 12 * 1024, nullptr, 1, nullptr, 0);
