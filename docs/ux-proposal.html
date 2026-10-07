@@ -1,0 +1,934 @@
+<title>oyobidashi 体験設計</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=BIZ+UDPGothic:wght@400;700&family=DotGothic16&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans+JP:wght@400;500;700&display=swap">
+<style>
+/* Layout: 仕様書のような2カラム。左に見出しラベル、右に本文。M5Dial の画面は実機と同じく常に黒とオレンジ */
+:root {
+  --bg: #F2F2EF;
+  --surface: #FFFFFF;
+  --line: #DCDBD5;
+  --fg: #16150F;
+  --muted: #66645C;
+  --accent: #C8430E;
+  --accent-soft: #FBE3D6;
+  --chip: #E8E7E1;
+
+  --dev-bg: #000000;
+  --dev-fg: #FFFFFF;
+  --dev-sub: #8C8C8C;
+  --dev-track: #262626;
+  --dev-accent: #FF5A1F;
+  --dev-ink: #140700;
+  --dev-bezel: #2A2A2A;
+  --dev-bezel-hi: #555555;
+
+  --phone-bg: #1E2833;
+  --phone-card: #3B4653;
+  --phone-fg: #FFFFFF;
+  --phone-sub: #C5CDD6;
+
+  --f-display: "DotGothic16", "IBM Plex Sans JP", "Hiragino Sans", sans-serif;
+  --f-body: "IBM Plex Sans JP", "Hiragino Sans", "Noto Sans JP", sans-serif;
+  --f-mono: "IBM Plex Mono", ui-monospace, "SF Mono", Menlo, monospace;
+
+  --s-1: 0.75rem; --s0: 0.875rem; --s1: 1rem; --s2: 1.25rem; --s3: 1.6rem; --s4: 2.4rem;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #121210; --surface: #1B1B18; --line: #2F2E2A; --fg: #ECEAE3; --muted: #A3A096;
+    --accent: #FF6A33; --accent-soft: #3A1F13; --chip: #27261F; color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #121210; --surface: #1B1B18; --line: #2F2E2A; --fg: #ECEAE3; --muted: #A3A096;
+  --accent: #FF6A33; --accent-soft: #3A1F13; --chip: #27261F; color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+body {
+  background: var(--bg); color: var(--fg);
+  font-family: var(--f-body); font-size: var(--s1); line-height: 1.75;
+  padding-inline: 16px; padding-block: 0 4rem;
+}
+.wrap { max-width: 1080px; margin-inline: auto; }
+h1, h2, h3 { text-wrap: balance; line-height: 1.35; margin: 0; }
+p { margin: 0; }
+a { color: var(--accent); }
+button { font: inherit; color: inherit; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+/* ---------- hero ---------- */
+.hero { display: grid; gap: 1.5rem; padding-block: 3.5rem 2.5rem; border-bottom: 1px solid var(--line); }
+.eyebrow { font-family: var(--f-mono); font-size: var(--s-1); letter-spacing: .08em; color: var(--muted); text-transform: uppercase; }
+.hero h1 { font-family: var(--f-display); font-weight: 400; font-size: clamp(1.9rem, 5vw, 3.2rem); letter-spacing: .02em; }
+.hero h1 em { font-style: normal; color: var(--accent); }
+.lead { max-width: 44em; color: var(--fg); font-size: var(--s1); }
+.keys { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 1px; background: var(--line); border: 1px solid var(--line); }
+.key { background: var(--surface); padding: 1.1rem 1.2rem; display: grid; gap: .35rem; min-width: 0; }
+.key b { font-size: var(--s1); }
+.key span { color: var(--muted); font-size: var(--s0); }
+
+/* ---------- sections ---------- */
+section.sec { display: grid; grid-template-columns: 180px minmax(0, 1fr); gap: 2rem; padding-block: 3rem; border-bottom: 1px solid var(--line); }
+.sec-label { font-family: var(--f-mono); font-size: var(--s-1); letter-spacing: .06em; color: var(--muted); text-transform: uppercase; position: sticky; top: calc(env(safe-area-inset-top, 0px) + 1rem); align-self: start; display: grid; gap: .3rem; }
+.sec-label b { font-family: var(--f-display); font-weight: 400; font-size: var(--s3); color: var(--fg); letter-spacing: 0; text-transform: none; }
+.sec-body { display: grid; gap: 1.5rem; min-width: 0; }
+.sec-body > h2 { font-size: var(--s3); }
+.sec-body > p, .note { max-width: 44em; }
+.note { color: var(--muted); font-size: var(--s0); }
+@media (max-width: 760px) {
+  section.sec { grid-template-columns: minmax(0, 1fr); gap: 1rem; }
+  .sec-label { position: static; }
+}
+
+/* ---------- persona ---------- */
+.chip { display: inline-grid; place-items: center; min-width: 1.6em; height: 1.6em; padding: 0 .35em; border-radius: .3em; font-family: var(--f-mono); font-size: var(--s-1); font-weight: 500; background: var(--chip); color: var(--fg); }
+.chip.y { background: var(--accent-soft); color: var(--accent); }
+.personas { display: grid; grid-template-columns: repeat(auto-fit, minmax(290px, 1fr)); gap: 1rem; }
+.persona { background: var(--surface); border: 1px solid var(--line); padding: 1.25rem; display: grid; gap: .8rem; align-content: start; min-width: 0; }
+.persona header { display: flex; gap: .75rem; align-items: baseline; flex-wrap: wrap; }
+.persona h3 { font-size: var(--s2); }
+.persona .role { color: var(--muted); font-size: var(--s0); width: 100%; }
+.persona blockquote { margin: 0; padding: .7rem .9rem; background: var(--bg); font-size: var(--s0); border-left: 3px solid var(--line); }
+.persona.staff blockquote { border-left-color: var(--accent); }
+.persona dl { display: grid; grid-template-columns: 4.5em minmax(0, 1fr); gap: .35rem .75rem; margin: 0; font-size: var(--s0); }
+.persona dt { color: var(--muted); }
+.persona dd { margin: 0; }
+
+/* ---------- principles ---------- */
+.principles { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1px; background: var(--line); border: 1px solid var(--line); }
+.principles li { background: var(--surface); padding: 1.1rem 1.2rem; display: grid; gap: .4rem; align-content: start; min-width: 0; }
+.principles h3 { font-size: var(--s1); }
+.principles p { font-size: var(--s0); color: var(--muted); }
+.who { display: flex; gap: .3rem; flex-wrap: wrap; }
+
+/* ---------- journey ---------- */
+.scroll { overflow-x: auto; border: 1px solid var(--line); background: var(--surface); }
+table { border-collapse: collapse; width: 100%; font-size: var(--s0); }
+th, td { text-align: left; vertical-align: top; padding: .7rem .8rem; border-bottom: 1px solid var(--line); }
+thead th { font-family: var(--f-mono); font-weight: 500; font-size: var(--s-1); letter-spacing: .05em; color: var(--muted); text-transform: uppercase; background: var(--bg); }
+tbody tr:last-child td { border-bottom: 0; }
+td.t { font-family: var(--f-mono); white-space: nowrap; font-variant-numeric: tabular-nums; color: var(--accent); }
+.journey { min-width: 760px; }
+.journey td:nth-child(2) { font-weight: 700; white-space: nowrap; }
+
+/* ---------- prototype ---------- */
+.proto { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 1.5rem; background: var(--surface); border: 1px solid var(--line); padding: 1.5rem; }
+@media (max-width: 860px) { .proto { grid-template-columns: minmax(0, 1fr); } }
+.dial-col { display: grid; justify-items: center; gap: 1rem; }
+.dial { --size: 264px; width: calc(var(--size) + 36px); max-width: 100%; aspect-ratio: 1; border-radius: 50%; display: grid; place-items: center;
+  background: repeating-conic-gradient(var(--dev-bezel) 0 2deg, var(--dev-bezel-hi) 2deg 2.6deg); padding: 18px; }
+.dial canvas { width: var(--size); max-width: 100%; aspect-ratio: 1; border-radius: 50%; background: var(--dev-bg); cursor: pointer; touch-action: none; display: block; }
+.dial.sm { --size: 168px; padding: 10px; width: calc(var(--size) + 20px); }
+.dial.md { --size: 200px; padding: 12px; width: calc(var(--size) + 24px); }
+.hint { font-size: var(--s-1); color: var(--muted); text-align: center; max-width: 22em; }
+.side { display: grid; gap: 1.25rem; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); align-content: start; min-width: 0; }
+@media (max-width: 1000px) { .side { grid-template-columns: minmax(0, 1fr); } }
+.panel-h { font-family: var(--f-mono); font-size: var(--s-1); letter-spacing: .06em; color: var(--muted); text-transform: uppercase; margin-bottom: .5rem; }
+.controls { display: grid; gap: .6rem; align-content: start; }
+.btn { border: 1px solid var(--line); background: var(--bg); padding: .55rem .8rem; border-radius: .4rem; cursor: pointer; text-align: left; display: flex; justify-content: space-between; gap: .75rem; align-items: center; font-size: var(--s0); }
+.btn:hover { border-color: var(--fg); }
+.btn.primary { background: var(--accent); color: var(--surface); border-color: var(--accent); }
+.btn[aria-pressed="true"] .state { color: var(--accent); }
+.btn .state { font-family: var(--f-mono); font-size: var(--s-1); color: var(--muted); }
+.seg { display: flex; border: 1px solid var(--line); border-radius: .4rem; overflow: hidden; font-size: var(--s0); }
+.seg button { flex: 1; border: 0; background: var(--bg); padding: .5rem; cursor: pointer; font-family: var(--f-mono); }
+.seg button[aria-pressed="true"] { background: var(--fg); color: var(--bg); }
+.clock { font-family: var(--f-mono); font-variant-numeric: tabular-nums; font-size: var(--s0); color: var(--muted); }
+.log { list-style: none; margin: 0; padding: .6rem .8rem; background: var(--bg); border: 1px solid var(--line); font-family: var(--f-mono); font-size: var(--s-1); height: 9.5rem; overflow-y: auto; display: grid; align-content: start; gap: .15rem; }
+.log li { min-width: 0; overflow-wrap: anywhere; }
+
+.phone { background: var(--phone-bg); color: var(--phone-fg); border-radius: 1.6rem; padding: 1.1rem .8rem 1rem; display: grid; gap: .6rem; align-content: start; min-height: 20rem; }
+.phone .ptime { text-align: center; font-size: 2.2rem; font-weight: 300; line-height: 1.1; font-variant-numeric: tabular-nums; }
+.phone .pdate { text-align: center; font-size: var(--s-1); color: var(--phone-sub); margin-top: -.3rem; }
+.notifs { list-style: none; margin: 0; padding: 0; display: grid; gap: .45rem; }
+.notif { width: 100%; text-align: left; background: var(--phone-card); color: var(--phone-fg); border: 0; border-radius: .9rem; padding: .6rem .75rem; cursor: pointer; display: grid; gap: .1rem; font-size: var(--s-1); }
+.notif .top { display: flex; justify-content: space-between; color: var(--phone-sub); font-size: .68rem; letter-spacing: .03em; }
+.notif b { font-size: var(--s0); }
+.notif.done { opacity: .55; }
+.phone .empty { color: var(--phone-sub); font-size: var(--s-1); text-align: center; padding: 1rem .5rem; }
+.phone .tip { color: var(--phone-sub); font-size: .68rem; text-align: center; }
+
+/* ---------- screens ---------- */
+.screens { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 1rem; }
+.screen { background: var(--surface); border: 1px solid var(--line); padding: 1rem; display: grid; gap: .7rem; justify-items: center; align-content: start; min-width: 0; }
+.screen h3 { font-size: var(--s1); justify-self: start; display: flex; gap: .5rem; align-items: baseline; }
+.screen h3 code { font-family: var(--f-mono); font-size: var(--s-1); color: var(--muted); font-weight: 400; }
+.screen dl { margin: 0; display: grid; grid-template-columns: 3.4em minmax(0, 1fr); gap: .25rem .6rem; font-size: var(--s-1); justify-self: stretch; }
+.screen dt { color: var(--muted); }
+.screen dd { margin: 0; }
+
+.dirs { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1rem; }
+.dir { background: var(--surface); border: 1px solid var(--line); padding: 1.25rem; display: grid; gap: .8rem; justify-items: center; align-content: start; min-width: 0; position: relative; }
+.dir.rec { border-color: var(--accent); box-shadow: inset 0 0 0 1px var(--accent); }
+.dir .badge { position: absolute; top: .75rem; right: .75rem; font-family: var(--f-mono); font-size: var(--s-1); background: var(--accent); color: var(--surface); padding: .1rem .5rem; border-radius: .25rem; }
+.dir h3 { font-size: var(--s1); justify-self: start; }
+.dir p { font-size: var(--s0); color: var(--muted); justify-self: stretch; }
+
+.play { border: 1px solid var(--line); background: var(--bg); border-radius: 999px; width: 2rem; height: 2rem; cursor: pointer; display: inline-grid; place-items: center; }
+.play:hover { border-color: var(--accent); color: var(--accent); }
+.pri { font-family: var(--f-mono); font-size: var(--s-1); padding: .05rem .45rem; border-radius: .25rem; white-space: nowrap; }
+.pri.must { background: var(--accent); color: var(--surface); }
+.pri.should { background: var(--accent-soft); color: var(--accent); }
+.pri.later { background: var(--chip); color: var(--muted); }
+
+/* ---------- panel mock ---------- */
+.panel-wrap { display: grid; grid-template-columns: minmax(0, 340px) minmax(0, 1fr); gap: 2rem; align-items: start; }
+@media (max-width: 760px) { .panel-wrap { grid-template-columns: minmax(0, 1fr); } }
+.a3 { aspect-ratio: 297 / 420; max-width: 100%; background: var(--dev-bg); color: var(--dev-fg); padding: 9% 9% 7%; display: grid; grid-template-rows: auto auto 1fr auto auto; gap: 5%; box-shadow: 0 1px 0 var(--line); }
+.a3 .ttl { font-family: var(--f-display); font-size: clamp(1.4rem, 6vw, 2rem); letter-spacing: .06em; line-height: 1; color: var(--dev-accent); }
+.a3 .msg { font-size: clamp(.8rem, 3.4vw, 1rem); font-weight: 700; line-height: 1.5; }
+.a3 .msg small { display: block; font-weight: 400; color: var(--dev-sub); font-size: .72em; }
+.a3 .hole { place-self: center; width: 46%; aspect-ratio: 1; border-radius: 50%; background: var(--dev-accent); box-shadow: 0 0 0 8px var(--dev-bezel), 0 0 0 9px var(--dev-bezel-hi); display: grid; place-items: center; font-family: var(--f-display); color: var(--dev-ink); font-size: clamp(1rem, 4.5vw, 1.4rem); }
+.a3 ol { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: .5rem; font-size: clamp(.6rem, 2.6vw, .78rem); line-height: 1.45; }
+.a3 ol li { border-top: 1px solid var(--dev-track); padding-top: .4rem; min-width: 0; }
+.a3 ol b { font-family: var(--f-display); font-weight: 400; color: var(--dev-accent); display: block; }
+.a3 ol small { color: var(--dev-sub); display: block; }
+.a3 .foot { display: flex; justify-content: space-between; align-items: end; font-size: clamp(.55rem, 2.3vw, .7rem); color: var(--dev-sub); gap: .5rem; }
+.a3 .qr { width: 18%; aspect-ratio: 1; background: var(--dev-fg); flex: none; }
+.specs { list-style: none; margin: 0; padding: 0; display: grid; gap: .9rem; }
+.specs li { display: grid; grid-template-columns: 7.5em minmax(0, 1fr); gap: .75rem; font-size: var(--s0); border-bottom: 1px solid var(--line); padding-bottom: .9rem; }
+.specs li:last-child { border-bottom: 0; }
+.specs b { font-family: var(--f-mono); font-weight: 500; font-size: var(--s-1); color: var(--muted); letter-spacing: .04em; }
+
+/* ---------- decisions ---------- */
+.steps, .asks { margin: 0; padding-left: 1.4em; display: grid; gap: .7rem; max-width: 46em; }
+.asks li::marker, .steps li::marker { font-family: var(--f-mono); color: var(--accent); }
+.asks b, .steps b { display: block; }
+.asks span, .steps span { color: var(--muted); font-size: var(--s0); }
+.callout { background: var(--accent-soft); padding: 1rem 1.2rem; font-size: var(--s0); max-width: 46em; display: grid; gap: .3rem; }
+.callout b { color: var(--accent); }
+
+@media (prefers-reduced-motion: reduce) { * { scroll-behavior: auto !important; } }
+</style>
+
+<div class="wrap">
+
+<header class="hero">
+  <div class="eyebrow">oyobidashi · UX / UI 提案 · 2026-10-07</div>
+  <h1>押した瞬間から、<em>担当者が来るまで</em>。</h1>
+  <p class="lead">BIG スイッチを使わず、M5Dial をパネルに埋め込んで展示する前提で、来場者と担当者の体験を設計し直しました。ペルソナ5人の困りごとから原則を決め、画面・音・通知・パネルに落とし込んでいます。下のプロトタイプで、実際の流れを触って確かめられます。ここにある画面・文言・音はすべて提案で、まだ確定していません。</p>
+  <div class="keys">
+    <div class="key"><b>画面そのものがボタン</b><span>オレンジに光る丸が、言葉を読まなくても「押せる」と伝える。押した瞬間に音と波紋で応える</span></div>
+    <div class="key"><b>担当者の返事が画面に届く</b><span>通知をタップするだけで、M5Dial に「担当者が向かっています」と出る</span></div>
+    <div class="key"><b>待てない人を引き止めない</b><span>1分たつと連絡先の QR を出し、10分返事がなければ「お待たせしています」で区切る</span></div>
+  </div>
+</header>
+
+<section class="sec" id="premise">
+  <div class="sec-label">00<b>前提</b></div>
+  <div class="sec-body">
+    <div class="scroll">
+      <table>
+        <tbody>
+          <tr><th>展示の形</th><td>M5Dial を説明文入りのパネルに埋め込む。BIG スイッチは使わない。来場者が触るのは M5Dial の画面だけ</td></tr>
+          <tr><th>担当者</th><td>陽介さん1人。トイレ、昼食、ほかのブースへのあいさつで1日に何度も席を外す。iPhone はポケット、会場は騒がしい</td></tr>
+          <tr><th>通信</th><td>Android のテザリング → ntfy.sh → iPhone の ntfy アプリ。今の実測で、押してから届くまで約3秒</td></tr>
+          <tr><th>費用</th><td>無料で作る。追加の部品やカードを買う案は「要相談」として分けた</td></tr>
+          <tr><th>使える部品</th><td>丸型 240×240 の画面 (押し込みボタン兼タッチ)、ダイヤル、ブザー (80dB)、NFC リーダー (ISO14443A/B。Suica などの FeliCa は読めない)、RTC</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<section class="sec" id="personas">
+  <div class="sec-label">01<b>ペルソナ</b>5 people</div>
+  <div class="sec-body">
+    <p>来場者4人と担当者1人。来場者側は「目的」「待てる時間」「読める言葉」「押し方」がそれぞれ違う人を選びました。右上の記号は、このあとの原則や機能の表で誰のための判断かを示すのに使います。</p>
+    <div class="personas">
+      <article class="persona">
+        <header><span class="chip">K</span><h3>ケンタ (34)</h3><span class="role">ソフトウェアエンジニア。SNS で自作キーボードを見て、作者と話すために来た</span></header>
+        <blockquote>「押したけど、これ本当に届いてる?」</blockquote>
+        <dl>
+          <dt>したい</dt><dd>作者に直接、設計や入手方法を聞きたい</dd>
+          <dt>不安</dt><dd>押しても反応が分からないと、待つべきか帰るべきか決められない</dd>
+          <dt>行動</dt><dd>説明は読まずにまず押す。待てるのは5分ほど</dd>
+          <dt>必要</dt><dd>届いたこと、来るかどうか、どれくらい待ったか</dd>
+        </dl>
+      </article>
+      <article class="persona">
+        <header><span class="chip">M</span><h3>ミホ (45)</h3><span class="role">雑貨店のバイヤー。1日で60ブースを回り、取引できそうな出展者だけを深掘りする</span></header>
+        <blockquote>「3分待って来なければ次に行きます。連絡先だけほしい」</blockquote>
+        <dl>
+          <dt>したい</dt><dd>短い時間で取引できるかを判断したい</dd>
+          <dt>不安</dt><dd>来るか分からない人を待つ時間がもったいない</dd>
+          <dt>行動</dt><dd>待つ前に「待つ価値があるか」を考える</dd>
+          <dt>必要</dt><dd>待てないときに、連絡先を持ち帰る手段</dd>
+        </dl>
+      </article>
+      <article class="persona">
+        <header><span class="chip">L</span><h3>Liam (29)</h3><span class="role">台湾から来たハードウェア系スタートアップの創業者。日本語はほとんど読めない</span></header>
+        <blockquote>"Is this a button? Can I press it?"</blockquote>
+        <dl>
+          <dt>したい</dt><dd>仕様と量産について聞きたい</dd>
+          <dt>不安</dt><dd>説明が読めず、押していいものか分からない</dd>
+          <dt>行動</dt><dd>形と色、短い英語を頼りに判断する</dd>
+          <dt>必要</dt><dd>言葉に頼らない「押せる」見た目と、短い英語の補足</dd>
+        </dl>
+      </article>
+      <article class="persona">
+        <header><span class="chip">S</span><h3>サクラ (8) と父</h3><span class="role">家族で来場。子どもは光るものを見つけると何度も押す。父は人に迷惑をかけたくない</span></header>
+        <blockquote>「押したら光った! もう1回!」<br>「すみません、押しちゃって…」</blockquote>
+        <dl>
+          <dt>したい</dt><dd>子: 押して何が起きるか見たい</dd>
+          <dt>不安</dt><dd>父: いたずらで担当者を呼び出してしまうこと</dd>
+          <dt>行動</dt><dd>連打する。長押しもする</dd>
+          <dt>必要</dt><dd>何度押しても通知は1回。押したときの反応は楽しいまま</dd>
+        </dl>
+      </article>
+      <article class="persona staff">
+        <header><span class="chip y">Y</span><h3>ヨウスケ (出展者)</h3><span class="role">1人で出展。iPhone をポケットに入れて歩き回る。会場はアナウンスと話し声で騒がしい</span></header>
+        <blockquote>「トイレ中に鳴っても、返事だけはすぐしたい」</blockquote>
+        <dl>
+          <dt>したい</dt><dd>来てくれた人を逃したくない</dd>
+          <dt>不安</dt><dd>通知を見逃すこと。すぐ戻れないときに、来場者を待たせ続けること</dd>
+          <dt>行動</dt><dd>片手で iPhone を見る。返事に何ステップもかけられない</dd>
+          <dt>必要</dt><dd>気づくまで知らせてくれる。1タップで返事。戻ったら簡単に元に戻せる</dd>
+        </dl>
+      </article>
+    </div>
+  </div>
+</section>
+
+<section class="sec" id="principles">
+  <div class="sec-label">02<b>体験の原則</b>7 rules</div>
+  <div class="sec-body">
+    <p>ペルソナの困りごとから、判断に迷ったときの基準を7つ決めました。後ろの画面、音、通知はすべてこの原則から決めています。</p>
+    <ul class="principles">
+      <li><div class="who"><span class="chip">K</span><span class="chip">S</span><span class="chip">L</span></div><h3>押した瞬間に応える</h3><p>通信には約3秒かかる。待たせる前に、0.1秒で音と波紋を返して「押せた」を伝える。送信を速くするより、この反応の方が体感に効く</p></li>
+      <li><div class="who"><span class="chip">K</span><span class="chip">M</span><span class="chip y">Y</span></div><h3>「届いた」と「来る」を分けて見せる</h3><p>通知が届いただけでは、担当者が気づいたかは分からない。担当者の返事を受けたときだけ「向かっています」と出す</p></li>
+      <li><div class="who"><span class="chip">M</span><span class="chip">K</span></div><h3>待つ時間に、目安と逃げ道を</h3><p>待った時間を見せる。1分たったら連絡先の QR を出して、待てない人が気まずくならずに離れられるようにする</p></li>
+      <li><div class="who"><span class="chip">K</span><span class="chip">L</span></div><h3>失敗を来場者に背負わせない</h3><p>送れなかったら裏で自動的にやり直す。来場者にもう一度押してもらうのは、やり直しが全部失敗したときだけ</p></li>
+      <li><div class="who"><span class="chip">L</span><span class="chip">S</span></div><h3>言葉より先に、形で伝える</h3><p>オレンジの丸 = 押せる、黒 = 待っている。文字は日本語を主にして、英語は短い補足として添える</p></li>
+      <li><div class="who"><span class="chip y">Y</span></div><h3>担当者の手間は1タップ</h3><p>通知をタップすることが、そのまま返事になる。戻ったら画面を長押しするだけで待機に戻る</p></li>
+      <li><div class="who"><span class="chip">S</span><span class="chip y">Y</span></div><h3>いたずらしても誰も困らない</h3><p>呼び出し中に何度押しても、通知は増やさない。押した反応 (音と波紋) だけは毎回返す</p></li>
+    </ul>
+  </div>
+</section>
+
+<section class="sec" id="journey">
+  <div class="sec-label">03<b>体験の流れ</b>journey</div>
+  <div class="sec-body">
+    <p>ケンタが押してから担当者が来るまでを、来場者と担当者の両方から見た流れです。時間は押した瞬間からの経過。</p>
+    <div class="scroll">
+      <table class="journey">
+        <thead><tr><th>経過</th><th>場面</th><th>画面と音 (来場者)</th><th>担当者</th><th>感じてほしいこと</th></tr></thead>
+        <tbody>
+          <tr><td class="t">−</td><td>見つける</td><td>オレンジに光る丸と、ドットの「PUSH」。外周のドットがゆっくり呼吸する</td><td>席を外している</td><td>これは押すものだ</td></tr>
+          <tr><td class="t">0.1s</td><td>押す</td><td>「ピッ」と鳴り、オレンジの丸が沈み込んで波紋が広がる</td><td>−</td><td>押せた</td></tr>
+          <tr><td class="t">0–3s</td><td>呼び出し中</td><td>CALLING。外周のドットが回る。送れなければ裏でやり直す</td><td>−</td><td>動いている</td></tr>
+          <tr><td class="t">3s</td><td>届いた</td><td>「ピロン」。SENT と「担当者に届きました」。外周のドットが1秒ずつ灯り、待った時間を刻む</td><td>🔔 ブースで呼ばれています</td><td>届いた。時間は進んでいる</td></tr>
+          <tr><td class="t">1min</td><td>待つ</td><td>連絡先の QR と「お急ぎの方はこちら」に切り替わる</td><td>−</td><td>待てなくても大丈夫</td></tr>
+          <tr><td class="t">任意</td><td>返事が来る</td><td>「ピンポーン」。COMING と「担当者が向かっています」。外周が全部灯る</td><td>通知をタップして返事</td><td>来るなら待とう</td></tr>
+          <tr><td class="t">2 / 5min</td><td>返事がない</td><td>画面はそのまま</td><td>🔔 まだお待ちです (再通知)</td><td>(担当者) 見逃しても、もう一度知らせてくれる</td></tr>
+          <tr><td class="t">10min</td><td>区切る</td><td>「お待たせしています」と連絡先の QR。2分後に待機へ戻る</td><td>来場者に連絡先を案内しました</td><td>放っておかれていない</td></tr>
+          <tr><td class="t">到着</td><td>戻る</td><td>担当者が画面を3秒長押し → 待機に戻る</td><td>来場者と話す</td><td>(担当者) 戻すのも一瞬</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<section class="sec" id="prototype">
+  <div class="sec-label">04<b>触って確かめる</b>prototype</div>
+  <div class="sec-body">
+    <p>実機と同じ 240×240 の画面を、ブラウザで再現しました。画面をクリックすると押したことになります。右の iPhone の通知をタップすると、担当者が返事をしたことになります。時間を早送りすると、再通知や QR の切り替わりも確かめられます。</p>
+    <div class="proto">
+      <div class="dial-col">
+        <div class="dial"><canvas id="dev" tabindex="0" aria-label="M5Dial の画面。クリックかスペースキーで押す。長押しで待機に戻す"></canvas></div>
+        <p class="hint">クリック = 押す / 長押し 3秒 = 担当者が待機に戻す<br>画面の一番下の小さな点 = Wi-Fi 未接続 (担当者向け)</p>
+      </div>
+      <div class="side">
+        <div>
+          <div class="panel-h">担当者の iPhone</div>
+          <div class="phone">
+            <div class="ptime" id="ptime">10:42</div>
+            <div class="pdate">展示会 1日目</div>
+            <ul class="notifs" id="notifs"></ul>
+            <p class="empty" id="pempty">通知はまだありません。<br>左の画面を押してください</p>
+            <p class="tip">通知をタップ = 「向かいます」と返事</p>
+          </div>
+        </div>
+        <div class="controls">
+          <div class="panel-h">シミュレーション</div>
+          <button class="btn primary" id="b-press" type="button">画面を押す<span class="state" style="color:inherit">Space</span></button>
+          <button class="btn" id="b-reply" type="button">担当者が通知をタップ<span class="state">返事</span></button>
+          <button class="btn" id="b-reset" type="button">担当者が戻る (長押し)<span class="state">3s</span></button>
+          <button class="btn" id="b-wifi" type="button" aria-pressed="true">Wi-Fi<span class="state" id="s-wifi">ON</span></button>
+          <button class="btn" id="b-present" type="button" aria-pressed="false">在席モード (拡張案)<span class="state" id="s-present">OFF</span></button>
+          <button class="btn" id="b-sound" type="button" aria-pressed="true">音<span class="state" id="s-sound">ON</span></button>
+          <div class="seg" role="group" aria-label="時間の速さ">
+            <button type="button" data-speed="1" aria-pressed="true">1×</button>
+            <button type="button" data-speed="10" aria-pressed="false">10×</button>
+            <button type="button" data-speed="60" aria-pressed="false">60×</button>
+          </div>
+          <div class="clock">経過 <span id="simclock">0:00</span></div>
+          <ul class="log" id="log" aria-live="polite"></ul>
+          <button class="btn" id="b-restart" type="button">最初から<span class="state">reset</span></button>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="sec" id="screens">
+  <div class="sec-label">05<b>画面一覧</b>8 states</div>
+  <div class="sec-body">
+    <p>色の意味は2つだけにしました。<b>オレンジの丸 = 来場者が押す番</b> (待機、失敗)、<b>黒 = 待つ番</b> (呼び出し中から先)。大きな英単語はドットで描き、dotting dots らしさと「機械が応えている」感じを出します。日本語は読みやすさを優先して BIZ UDP ゴシックを想定しています。</p>
+    <div class="screens" id="gallery"></div>
+  </div>
+</section>
+
+<section class="sec" id="direction">
+  <div class="sec-label">06<b>見た目の方向性</b>3 options</div>
+  <div class="sec-body">
+    <p>待機画面は、パネルの中で2〜3m先から目に入る、いちばん大事な画面です。3つの方向を比べました。おすすめは C です。待機と失敗では C を使い、それ以外の画面は A の言葉づかい (外周のドット) で揃えます。</p>
+    <div class="dirs">
+      <div class="dir"><h3>A. Dot Signal</h3><div class="dial md"><canvas data-dir="A"></canvas></div><p>黒地に外周60個のドット。時計の秒のように灯る。ブランドらしさはいちばん強いが、遠くからは「押せる」と分かりにくい</p></div>
+      <div class="dir"><h3>B. Quiet Ring</h3><div class="dial md"><canvas data-dir="B"></canvas></div><p>細いリングと大きな日本語だけ。いちばん読みやすいが、ほかのブースのモニターと見分けがつきにくい</p></div>
+      <div class="dir rec"><span class="badge">おすすめ</span><h3>C. Big Button</h3><div class="dial md"><canvas data-dir="C"></canvas></div><p>画面全体がオレンジのボタンになる。押すと沈み込んで黒に変わる。言葉が読めない人や子どもにも「押せる」が伝わる</p></div>
+    </div>
+  </div>
+</section>
+
+<section class="sec" id="sound">
+  <div class="sec-label">07<b>音</b>buzzer</div>
+  <div class="sec-body">
+    <p>M5Dial のブザーで鳴らす音です。会場は騒がしいので、音は補助で、主な合図は画面にします。再生ボタンで、ブザーに近い音色 (矩形波) を確かめられます。</p>
+    <div class="scroll">
+      <table>
+        <thead><tr><th></th><th>いつ</th><th>音</th><th>ねらい</th></tr></thead>
+        <tbody>
+          <tr><td><button class="play" data-sound="press" type="button" aria-label="押したときの音を再生">▶</button></td><td>押した瞬間</td><td>ピッ (高く短い)</td><td>押せたことを0.1秒で返す</td></tr>
+          <tr><td><button class="play" data-sound="sent" type="button" aria-label="届いたときの音を再生">▶</button></td><td>通知が届いた</td><td>ピロン (上がる2音)</td><td>前向きな合図</td></tr>
+          <tr><td><button class="play" data-sound="coming" type="button" aria-label="返事が来たときの音を再生">▶</button></td><td>担当者の返事</td><td>ピンポーン (玄関チャイム)</td><td>いちばん目立たせたい知らせ。周りの人も「来るんだ」と分かる</td></tr>
+          <tr><td><button class="play" data-sound="tick" type="button" aria-label="呼び出し中に押したときの音を再生">▶</button></td><td>呼び出し中に押した</td><td>コッ (小さく短い)</td><td>反応はするが、目立たせない</td></tr>
+          <tr><td><button class="play" data-sound="fail" type="button" aria-label="失敗したときの音を再生">▶</button></td><td>やり直しが全部失敗</td><td>ポッ ポッ (低い2音)</td><td>責める音にしない</td></tr>
+          <tr><td><button class="play" data-sound="reset" type="button" aria-label="待機に戻したときの音を再生">▶</button></td><td>担当者が待機に戻した</td><td>ピロリ (上がる3音)</td><td>担当者に操作が効いたことを伝える</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<section class="sec" id="notify">
+  <div class="sec-label">08<b>通知</b>iPhone</div>
+  <div class="sec-body">
+    <p>1通目は決定済みの文面のまま。2通目以降を追加します。どの通知もタップすると、M5Dial に「向かっています」と返事が届きます。</p>
+    <div class="scroll">
+      <table>
+        <thead><tr><th>いつ</th><th>タイトル</th><th>本文</th><th>優先度</th></tr></thead>
+        <tbody>
+          <tr><td class="t">押して3秒</td><td>🔔 ブースで呼ばれています</td><td>話を聞きたい人がいます！(10:42)</td><td>5 (決定済み)</td></tr>
+          <tr><td class="t">+2min</td><td>🔔 まだお待ちです</td><td>話を聞きたい人がいます！(10:42から・2分経過)</td><td>5</td></tr>
+          <tr><td class="t">+5min</td><td>🔔 まだお待ちです</td><td>話を聞きたい人がいます！(10:42から・5分経過)</td><td>5</td></tr>
+          <tr><td class="t">+10min</td><td>来場者に連絡先を案内しました</td><td>10分たったので、画面に QR を出しました</td><td>3</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="callout">
+      <b>iPhone で確かめる必要があること</b>
+      <span>ntfy のドキュメントでは、通知にボタン (「向かいます」「5分後」など) を付ける機能が iPhone で使えるかは書かれていません。通知をタップしたときに URL を開く機能は iPhone でも使えるので、まずは「通知をタップすると Safari が開いて返事が送られる」形で作ります。タップした後に Safari で送信結果の画面が一瞬出る見込みです。ボタンも使えると分かれば、「向かいます / 5分後に戻ります / 今日は戻れません」の3択に広げられます。</span>
+    </div>
+  </div>
+</section>
+
+<section class="sec" id="hardware">
+  <div class="sec-label">09<b>ハードウェア</b>M5Dial</div>
+  <div class="sec-body">
+    <div class="scroll">
+      <table>
+        <thead><tr><th>部品</th><th>使い方</th><th>判断</th></tr></thead>
+        <tbody>
+          <tr><td>画面 (押し込み)</td><td>来場者の主な入力。押した手応えがあるので「押した」実感が強い</td><td><span class="pri must">採用</span> パネルは画面の押し込みを邪魔しない作りにする</td></tr>
+          <tr><td>タッチパネル</td><td>押し込みが浅い人の保険。触れただけでも反応する</td><td><span class="pri must">採用</span> 押し込みと同じ1回として扱う</td></tr>
+          <tr><td>丸型画面</td><td>状態、待った時間、QR を表示。外周の60個のドットを時計の秒のように使う</td><td><span class="pri must">採用</span></td></tr>
+          <tr><td>ブザー</td><td>6種類の音 (上の表)</td><td><span class="pri must">採用</span> 音量は控えめ。会場では画面が主</td></tr>
+          <tr><td>ダイヤル</td><td>来場者向けには使わない。在席モードの切り替えなど、担当者だけの隠し操作に使う</td><td><span class="pri should">拡張</span> 用件を選ばせる案は、迷う人が増えるので見送り</td></tr>
+          <tr><td>NFC リーダー</td><td>担当者カードをかざして待機に戻す、在席を切り替える</td><td><span class="pri later">要相談</span> カードは付属せず、Suica は読めない。手持ちの ISO14443A のカード (社員証、ホテルのカードキーなど) が使えるか試してから判断</td></tr>
+          <tr><td>RTC</td><td>時刻の保持</td><td><span class="pri later">見送り</span> 電池をつながないので電源を切ると消える。時刻は今どおり NTP で合わせる</td></tr>
+          <tr><td>PORT.B</td><td>BIG スイッチ用</td><td><span class="pri later">見送り</span> BIG スイッチを使わないため</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<section class="sec" id="features">
+  <div class="sec-label">10<b>機能と優先度</b>backlog</div>
+  <div class="sec-body">
+    <div class="scroll">
+      <table>
+        <thead><tr><th>機能</th><th>誰のため</th><th>優先度</th><th>メモ</th></tr></thead>
+        <tbody>
+          <tr><td>押した瞬間の音と波紋</td><td><span class="chip">K</span> <span class="chip">S</span> <span class="chip">L</span></td><td><span class="pri must">Must</span></td><td>通信の前に出す</td></tr>
+          <tr><td>裏での自動やり直し (最大3回)</td><td><span class="chip">K</span> <span class="chip">L</span></td><td><span class="pri must">Must</span></td><td>画面は CALLING のまま。全部失敗したら RETRY</td></tr>
+          <tr><td>呼び出し中の連打は通知しない</td><td><span class="chip">S</span> <span class="chip y">Y</span></td><td><span class="pri must">Must</span></td><td>今の60秒の制限を「担当者が戻るまで」に広げる</td></tr>
+          <tr><td>待った時間の表示</td><td><span class="chip">K</span> <span class="chip">M</span></td><td><span class="pri must">Must</span></td><td>外周ドットと「お待ち 0:42」</td></tr>
+          <tr><td>担当者の返事 → 「向かっています」</td><td><span class="chip">K</span> <span class="chip">M</span> <span class="chip y">Y</span></td><td><span class="pri must">Must</span></td><td>返事用のトピックを、呼び出し中だけ1本の接続で待ち受ける</td></tr>
+          <tr><td>長押しで待機に戻す</td><td><span class="chip y">Y</span></td><td><span class="pri must">Must</span></td><td>3秒。1秒目から外周に進み具合を出す</td></tr>
+          <tr><td>1分で連絡先 QR</td><td><span class="chip">M</span> <span class="chip">L</span></td><td><span class="pri should">Should</span></td><td>QR の行き先を決める必要あり</td></tr>
+          <tr><td>再通知 (2分、5分) と10分での区切り</td><td><span class="chip y">Y</span> <span class="chip">K</span></td><td><span class="pri should">Should</span></td><td>ntfy の回数制限には十分おさまる</td></tr>
+          <tr><td>英語の補足</td><td><span class="chip">L</span></td><td><span class="pri should">Should</span></td><td>各画面の一番下に1行</td></tr>
+          <tr><td>なめらかな日本語フォント</td><td>全員</td><td><span class="pri should">Should</span></td><td>今の内蔵フォントは大きいとギザギザで、容量も約2MB。使う文字だけを入れた滑らかなフォントに替える (変換の仕組みは要検証)</td></tr>
+          <tr><td>在席モード</td><td><span class="chip y">Y</span> <span class="chip">S</span></td><td><span class="pri later">拡張</span></td><td>ブースにいるときは「担当者がいます」。切り替えは隠し操作</td></tr>
+          <tr><td>通知のボタンで3択の返事</td><td><span class="chip y">Y</span></td><td><span class="pri later">拡張</span></td><td>iPhone で使えるか確かめてから</td></tr>
+          <tr><td>送信の高速化 (事前接続)</td><td><span class="chip">K</span></td><td><span class="pri later">見送り</span></td><td>体感は0.1秒の反応で解決。メモリは返事の待ち受けに回す</td></tr>
+          <tr><td>ダイヤルで用件を選ぶ</td><td><span class="chip y">Y</span></td><td><span class="pri later">見送り</span></td><td>操作が増えて <span class="chip">L</span> <span class="chip">S</span> が迷う。「押すだけ」を約束するパネルと合わない</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<section class="sec" id="panel">
+  <div class="sec-label">11<b>パネル</b>A3 portrait</div>
+  <div class="sec-body">
+    <p>パネルの役割は、離れた場所から「ここで呼べる」と気づかせ、近づいた人に「押すと何が起きるか」を3ステップで伝えることです。画面の文言と言葉づかいを揃えます。レイアウトの最終形は陽介さんにお任せし、ここでは情報の順番と寸法の注意点だけを提案します。</p>
+    <div class="panel-wrap">
+      <div class="a3" role="img" aria-label="A3 縦のパネル案。上に STAFF CALL と説明文、中央に M5Dial、下に3ステップと QR">
+        <div class="ttl">STAFF CALL</div>
+        <div class="msg">担当者が席を外しているときは、<br>ボタンを押してください。<small>Press the button to call the staff.</small></div>
+        <div class="hole">PUSH</div>
+        <ol>
+          <li><b>1</b>押す<small>Press</small></li>
+          <li><b>2</b>担当者の iPhone に届く<small>We get notified</small></li>
+          <li><b>3</b>画面でお知らせ<small>See the screen</small></li>
+        </ol>
+        <div class="foot"><span>お急ぎの方は QR から<br>dotting dots</span><span class="qr" aria-hidden="true"></span></div>
+      </div>
+      <ul class="specs">
+        <li><b>設置</b><span>机の上で手前に15〜20°傾ける。立った人の目線から画面が真正面に近くなり、押しやすい</span></li>
+        <li><b>押し込み</b><span>M5Dial の画面は押し込むボタンを兼ねる。パネルの穴の縁で画面を押さえず、前面が数mm出るようにする。採寸は実機で</span></li>
+        <li><b>ダイヤル</b><span>回しても来場者には何も起きないので、隠しても出してもよい。在席モードを入れるなら担当者が回せるようにしておく</span></li>
+        <li><b>ケーブル</b><span>USB-C は背面へ逃がす。画面の上下の向きと、ケーブルの出口を合わせる</span></li>
+        <li><b>文字の大きさ</b><span>見出しは2m先から読める大きさ (A3 なら 60pt 前後)。説明は近づいてから読む前提で小さくてよい</span></li>
+        <li><b>QR</b><span>画面の QR と同じ行き先にする。画面が使えないときの保険にもなる</span></li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<section class="sec" id="next">
+  <div class="sec-label">12<b>確認と進め方</b>next</div>
+  <div class="sec-body">
+    <h2>確認したいこと</h2>
+    <ol class="asks">
+      <li><b>見た目の方向性</b><span>C (おすすめ)、A、B のどれにするか。組み合わせの調整も可</span></li>
+      <li><b>各画面の文言</b><span>画面一覧の日本語と英語。とくに待機の「押して担当者を呼ぶ」と、10分後の「お待たせしています」</span></li>
+      <li><b>英語の補足を入れるか</b><span>各画面の一番下に1行。不要なら外す</span></li>
+      <li><b>QR の行き先</b><span>Web サイト、X、問い合わせフォームなど。パネルの QR と同じにする</span></li>
+      <li><b>再通知と区切りの時間</b><span>2分と5分で再通知、10分で区切る案でよいか</span></li>
+      <li><b>音</b><span>6種類の音色と、そもそも鳴らすかどうか</span></li>
+      <li><b>iPhone での返事の確認</b><span>返事用のテスト通知を1通送り、タップで返事が届くか、ボタンが表示されるかを確かめてよいか</span></li>
+      <li><b>在席モードを今回入れるか</b><span>入れる場合は、切り替えを隠し操作 (長押し+ダイヤル) にするか、NFC カードにするか</span></li>
+    </ol>
+    <h2>決まったあとの進め方</h2>
+    <ol class="steps">
+      <li><b>状態の作り直しと、押した瞬間の反応</b><span>8つの画面、音、自動やり直し、連打の扱い、長押しで待機に戻す</span></li>
+      <li><b>担当者の返事</b><span>iPhone での確認を先に済ませてから、返事を待ち受けて「向かっています」を出す</span></li>
+      <li><b>再通知と QR</b><span>2分、5分の再通知、1分での QR、10分での区切り</span></li>
+      <li><b>フォント</b><span>使う文字だけを入れた滑らかな日本語フォントに替え、容量も減らす</span></li>
+      <li><b>拡張</b><span>在席モード、通知のボタン</span></li>
+    </ol>
+    <p class="note">各段階で実機に書き込み、陽介さんに押して確かめてもらってから次へ進みます。</p>
+  </div>
+</section>
+
+</div>
+
+<script>
+(() => {
+  const TAU = Math.PI * 2;
+  const css = getComputedStyle(document.documentElement);
+  const tok = (k) => css.getPropertyValue(k).trim();
+  const D = { bg: tok('--dev-bg'), fg: tok('--dev-fg'), sub: tok('--dev-sub'), track: tok('--dev-track'), accent: tok('--dev-accent'), ink: tok('--dev-ink') };
+  const JP = '"BIZ UDPGothic", "Hiragino Sans", sans-serif';
+  const RM = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  // ---- 5x7 ドットフォント（実機でも同じデータで描く想定） ----
+  const G = {
+    A: [14, 17, 17, 31, 17, 17, 17], C: [14, 17, 16, 16, 16, 17, 14], E: [31, 16, 16, 30, 16, 16, 31],
+    G: [14, 17, 16, 23, 17, 17, 15], H: [17, 17, 17, 31, 17, 17, 17], I: [14, 4, 4, 4, 4, 4, 14],
+    L: [16, 16, 16, 16, 16, 16, 31], M: [17, 27, 21, 21, 17, 17, 17], N: [17, 17, 25, 21, 19, 17, 17],
+    O: [14, 17, 17, 17, 17, 17, 14], P: [30, 17, 17, 30, 16, 16, 16], R: [30, 17, 17, 30, 20, 18, 17],
+    S: [15, 16, 16, 14, 1, 1, 30], T: [31, 4, 4, 4, 4, 4, 4], U: [17, 17, 17, 17, 17, 17, 14],
+    Y: [17, 17, 10, 4, 4, 4, 4],
+  };
+
+  function disc(ctx, color, r = 120) { ctx.fillStyle = color; ctx.beginPath(); ctx.arc(120, 120, r, 0, TAU); ctx.fill(); }
+  function dot(ctx, x, y, r, color, a = 1) { ctx.globalAlpha = a; ctx.fillStyle = color; ctx.beginPath(); ctx.arc(x, y, r, 0, TAU); ctx.fill(); ctx.globalAlpha = 1; }
+  function rim(ctx, fn) {
+    for (let i = 0; i < 60; i++) {
+      const a = -Math.PI / 2 + i * TAU / 60;
+      const [c, al] = fn(i);
+      dot(ctx, 120 + 111 * Math.cos(a), 120 + 111 * Math.sin(a), 2.5, c, al);
+    }
+  }
+  function dotWord(ctx, word, cy, maxW, on, off) {
+    const cols = word.length * 6 - 1;
+    const p = Math.min(5.4, maxW / cols), r = p * 0.36;
+    const x0 = 120 - (cols - 1) * p / 2, y0 = cy - 3 * p;
+    [...word].forEach((ch, i) => {
+      const g = G[ch]; if (!g) return;
+      for (let row = 0; row < 7; row++) for (let col = 0; col < 5; col++) {
+        const x = x0 + (i * 6 + col) * p, y = y0 + row * p;
+        if ((g[row] >> (4 - col)) & 1) dot(ctx, x, y, r, on);
+        else if (off) dot(ctx, x, y, r * 0.8, off[0], off[1]);
+      }
+    });
+  }
+  function text(ctx, s, y, size, weight, color, a = 1) {
+    const maxW = 2 * Math.sqrt(Math.max(0, 120 * 120 - (y - 120) * (y - 120))) - 30;
+    let sz = size;
+    ctx.font = `${weight} ${sz}px ${JP}`;
+    while (ctx.measureText(s).width > maxW && sz > 8) { sz -= 0.5; ctx.font = `${weight} ${sz}px ${JP}`; }
+    ctx.globalAlpha = a; ctx.fillStyle = color; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.fillText(s, 120, y); ctx.globalAlpha = 1;
+  }
+  // QR の位置と大きさを示すだけの仮の模様（読み取れない）
+  const QRM = (() => {
+    const n = 25, m = []; let seed = 7;
+    const rnd = () => (seed = (seed * 9301 + 49297) % 233280) / 233280;
+    const finder = (x, y) => { const dx = Math.max(Math.abs(x - 3), Math.abs(y - 3)); return dx !== 2 && dx <= 3; };
+    for (let y = 0; y < n; y++) for (let x = 0; x < n; x++) {
+      let v;
+      if (x < 8 && y < 8) v = finder(x, y); else if (x > 16 && y < 8) v = finder(x - 18, y); else if (x < 8 && y > 16) v = finder(x, y - 18);
+      else v = rnd() > 0.52;
+      m.push(v);
+    }
+    return { n, m };
+  })();
+  function qr(ctx, cy, size) {
+    const q = size / (QRM.n + 2), x0 = 120 - size / 2, y0 = cy - size / 2;
+    ctx.fillStyle = D.fg; ctx.fillRect(x0, y0, size, size);
+    ctx.fillStyle = D.bg;
+    QRM.m.forEach((v, i) => { if (v) ctx.fillRect(x0 + q * (1 + i % QRM.n), y0 + q * (1 + Math.floor(i / QRM.n)), q + 0.3, q + 0.3); });
+  }
+  const mmss = (s) => `${Math.floor(s / 60)}:${String(Math.floor(s % 60)).padStart(2, '0')}`;
+
+  // ---- 画面の描画 ----
+  function render(ctx, v, ms) {
+    const ph = RM ? 0 : ms / 1000;
+    ctx.save();
+    ctx.clearRect(0, 0, 240, 240);
+    ctx.beginPath(); ctx.arc(120, 120, 120, 0, TAU); ctx.clip();
+    const bottom = v.toast ? [v.toast, D.accent] : null;
+    switch (v.mode) {
+      case 'idle': {
+        const st = v.style || 'C';
+        if (st === 'C') {
+          disc(ctx, D.accent);
+          ctx.globalAlpha = 0.18; ctx.strokeStyle = D.ink; ctx.lineWidth = 2;
+          ctx.beginPath(); ctx.arc(120, 120, 100 + 3 * Math.sin(ph * 2), 0, TAU); ctx.stroke(); ctx.globalAlpha = 1;
+          rim(ctx, () => [D.ink, 0.22]);
+          text(ctx, 'ただいま席を外しています', 64, 12, 400, D.ink, 0.75);
+          dotWord(ctx, 'PUSH', 104, 150, D.ink, [D.ink, 0.1]);
+          text(ctx, '押して担当者を呼ぶ', 150, 19, 700, D.ink);
+          text(ctx, 'Press to call staff', 174, 11, 400, D.ink, 0.7);
+        } else if (st === 'A') {
+          disc(ctx, D.bg);
+          rim(ctx, (i) => [D.accent, 0.18 + 0.82 * Math.pow(Math.max(0, Math.cos(i * TAU / 60 - ph * 1.4)), 6)]);
+          text(ctx, 'ただいま席を外しています', 64, 12, 400, D.sub);
+          dotWord(ctx, 'PUSH', 104, 150, D.accent, [D.track, 1]);
+          text(ctx, '押して担当者を呼ぶ', 150, 19, 700, D.fg);
+          text(ctx, 'Press to call staff', 174, 11, 400, D.sub);
+        } else {
+          disc(ctx, D.bg);
+          ctx.strokeStyle = D.accent; ctx.lineWidth = 6; ctx.beginPath(); ctx.arc(120, 120, 114, 0, TAU); ctx.stroke();
+          text(ctx, 'ただいま席を外しています', 64, 12, 400, D.sub);
+          text(ctx, '押して', 104, 38, 700, D.fg);
+          text(ctx, '担当者を呼ぶ', 146, 22, 700, D.fg);
+          text(ctx, 'Press to call staff', 176, 11, 400, D.sub);
+        }
+        break;
+      }
+      case 'calling': {
+        disc(ctx, D.bg);
+        const head = (ph * 50) % 60;
+        rim(ctx, (i) => { const d = (head - i + 60) % 60; return d < 12 ? [D.accent, 1 - d / 12] : [D.track, 1]; });
+        dotWord(ctx, 'CALLING', 102, 176, D.fg, [D.track, 1]);
+        text(ctx, '呼び出しています', 148, 19, 700, D.fg);
+        if (bottom) text(ctx, bottom[0], 178, 12, 700, bottom[1]);
+        else text(ctx, v.retry ? 'もう少しお待ちください' : 'Calling staff', 178, 11, 400, D.sub);
+        break;
+      }
+      case 'sent': {
+        disc(ctx, D.bg);
+        const lit = Math.floor(v.el) % 60;
+        rim(ctx, (i) => i < lit ? [D.accent, 1] : i === lit ? [D.fg, 1] : [D.track, 1]);
+        if (v.el < 60) {
+          dotWord(ctx, 'SENT', 98, 130, D.accent, [D.track, 1]);
+          text(ctx, '担当者に届きました', 144, 18, 700, D.fg);
+          text(ctx, 'まもなく戻ります', 168, 13, 400, D.sub);
+          if (bottom) text(ctx, bottom[0], 196, 12, 700, bottom[1]); else text(ctx, `お待ち ${mmss(v.el)}`, 196, 12, 400, D.sub);
+        } else {
+          text(ctx, 'まもなく戻ります', 54, 15, 700, D.fg);
+          qr(ctx, 118, 78);
+          text(ctx, 'お急ぎの方はこちら', 176, 12, 400, D.sub);
+          if (bottom) text(ctx, bottom[0], 196, 11, 700, bottom[1]); else text(ctx, `お待ち ${mmss(v.el)}`, 196, 11, 400, D.sub);
+        }
+        break;
+      }
+      case 'coming': {
+        disc(ctx, D.bg);
+        const a = RM ? 1 : 0.55 + 0.45 * (0.5 + 0.5 * Math.sin(ph * 4));
+        rim(ctx, () => [D.accent, a]);
+        dotWord(ctx, 'COMING', 98, 170, D.accent, [D.track, 1]);
+        text(ctx, '担当者が向かっています', 144, 18, 700, D.fg);
+        text(ctx, 'このままお待ちください', 168, 13, 400, D.sub);
+        if (bottom) text(ctx, bottom[0], 196, 12, 700, bottom[1]); else text(ctx, 'Staff is on the way', 196, 11, 400, D.sub);
+        break;
+      }
+      case 'sorry': {
+        disc(ctx, D.bg);
+        rim(ctx, () => [D.track, 1]);
+        text(ctx, 'お待たせしています', 54, 15, 700, D.fg);
+        qr(ctx, 118, 78);
+        text(ctx, 'ご連絡はこちらから', 176, 12, 400, D.sub);
+        if (bottom) text(ctx, bottom[0], 196, 11, 700, bottom[1]); else text(ctx, 'Contact us here', 196, 11, 400, D.sub);
+        break;
+      }
+      case 'failed': {
+        disc(ctx, D.accent);
+        rim(ctx, () => [D.ink, 0.22]);
+        dotWord(ctx, 'RETRY', 98, 150, D.ink, [D.ink, 0.1]);
+        text(ctx, 'うまく届きませんでした', 144, 17, 700, D.ink);
+        text(ctx, 'もう一度押してください', 168, 13, 400, D.ink, 0.8);
+        text(ctx, 'Please press again', 192, 11, 400, D.ink, 0.7);
+        break;
+      }
+      case 'present': {
+        disc(ctx, D.bg);
+        rim(ctx, () => [D.fg, 0.35]);
+        dotWord(ctx, 'HELLO', 98, 150, D.fg, [D.track, 1]);
+        text(ctx, '担当者がいます', 144, 19, 700, D.fg);
+        text(ctx, 'お気軽にお声がけください', 168, 13, 400, D.sub);
+        if (bottom) text(ctx, bottom[0], 196, 12, 700, bottom[1]); else text(ctx, 'Talk to us', 196, 11, 400, D.sub);
+        break;
+      }
+    }
+    if (v.wifi === false) dot(ctx, 120, 229, 3, (v.mode === 'idle' || v.mode === 'failed') ? D.ink : D.sub);
+    if (v.fx != null) {
+      const p = v.fx;
+      if (v.fxKind === 'sink') { ctx.globalAlpha = 1 - p; disc(ctx, D.accent, 120 * (1 - p)); ctx.globalAlpha = 1; }
+      ctx.globalAlpha = 1 - p; ctx.strokeStyle = D.accent; ctx.lineWidth = 6 * (1 - p) + 1;
+      ctx.beginPath(); ctx.arc(120, 120, 30 + 90 * p, 0, TAU); ctx.stroke(); ctx.globalAlpha = 1;
+    }
+    if (v.hold > 0) {
+      ctx.strokeStyle = D.fg; ctx.lineWidth = 5; ctx.beginPath();
+      ctx.arc(120, 120, 113, -Math.PI / 2, -Math.PI / 2 + TAU * Math.min(1, v.hold)); ctx.stroke();
+      text(ctx, '長押しで待機に戻す', 214, 10, 700, D.fg);
+    }
+    ctx.restore();
+  }
+
+  function setup(canvas) {
+    const size = canvas.getBoundingClientRect().width || 240;
+    const dpr = window.devicePixelRatio || 1;
+    canvas.width = Math.round(size * dpr); canvas.height = Math.round(size * dpr);
+    const ctx = canvas.getContext('2d');
+    ctx.setTransform(canvas.width / 240, 0, 0, canvas.height / 240, 0, 0);
+    return ctx;
+  }
+
+  // ---- 音（ブザーに近い矩形波） ----
+  let ac = null, soundOn = true;
+  const SOUNDS = {
+    press: [[2093, 45]], sent: [[1568, 70], [2093, 120]], coming: [[1319, 200], [1047, 420]],
+    tick: [[1568, 18, 0.025]], fail: [[523, 110], [523, 110]], reset: [[1047, 60], [1568, 60], [2093, 90]],
+  };
+  function beep(name, force) {
+    if (!soundOn && !force) return;
+    try {
+      ac = ac || new (window.AudioContext || window.webkitAudioContext)();
+      let t = ac.currentTime + 0.01;
+      for (const [f, d, g = 0.05] of SOUNDS[name]) {
+        const o = ac.createOscillator(), gn = ac.createGain();
+        o.type = 'square'; o.frequency.value = f;
+        gn.gain.setValueAtTime(g, t); gn.gain.setValueAtTime(0, t + d / 1000);
+        o.connect(gn).connect(ac.destination); o.start(t); o.stop(t + d / 1000 + 0.02);
+        t += d / 1000 + 0.035;
+      }
+    } catch (e) { /* 音が出せない環境では無音 */ }
+  }
+  document.querySelectorAll('[data-sound]').forEach((b) => b.addEventListener('click', () => beep(b.dataset.sound, true)));
+
+  // ---- シミュレーション ----
+  const BASE = 10 * 3600 + 42 * 60;
+  const S = {};
+  function restart() {
+    Object.assign(S, { t: 0, speed: S.speed || 1, wifi: true, mode: 'idle', t0: 0, callClock: '', attempts: 0, doneAt: 0,
+      n2: false, n5: false, pendingReply: false, toastUntil: 0, toast: '', fxAt: -1e9, fxKind: 'tap', holdStart: null, notifs: [] });
+    logEl.innerHTML = ''; renderNotifs(); syncButtons();
+    log('待機 (PUSH)');
+  }
+  const logEl = document.getElementById('log');
+  const clockOf = (t) => { const s = BASE + Math.floor(t); return `${Math.floor(s / 3600)}:${String(Math.floor(s / 60) % 60).padStart(2, '0')}`; };
+  function log(msg) {
+    const li = document.createElement('li'); li.textContent = `${mmss(S.t)}  ${msg}`;
+    logEl.appendChild(li); logEl.scrollTop = logEl.scrollHeight;
+  }
+  function go(mode, msg) { S.mode = mode; S.t0 = S.t; if (msg) log(msg); }
+  function toast(msg) { S.toast = msg; S.toastUntil = performance.now() + 1600; }
+  function notify(title, body, pri) { S.notifs.unshift({ time: clockOf(S.t), title, body, pri, done: false }); renderNotifs(); log(`通知: ${title}`); }
+
+  function press() {
+    const now = performance.now();
+    if (S.mode === 'idle' || S.mode === 'failed' || S.mode === 'sorry') {
+      beep('press'); S.fxAt = now; S.fxKind = S.mode === 'sorry' ? 'tap' : 'sink';
+      S.callClock = clockOf(S.t); S.attempts = 0; S.doneAt = S.t + 3; S.n2 = S.n5 = false;
+      go('calling', '押された → 呼び出し中 (CALLING)');
+    } else if (S.mode === 'present') {
+      beep('tick'); S.fxAt = now; S.fxKind = 'tap'; toast('目の前にいます');
+    } else {
+      beep('tick'); S.fxAt = now; S.fxKind = 'tap';
+      toast(S.mode === 'coming' ? 'もうすぐ着きます' : 'もう届いています');
+      log('呼び出し中に押された (通知は増やさない)');
+    }
+  }
+  function reply() {
+    const open = S.notifs.find((n) => !n.done);
+    if (S.mode !== 'sent' && S.mode !== 'sorry') { log('返事できる通知がありません'); return; }
+    S.notifs.forEach((n) => { n.done = true; }); renderNotifs();
+    if (!S.wifi) { S.pendingReply = true; log('返事を送った (M5Dial は Wi-Fi が戻ったら受け取る)'); return; }
+    applyReply(open);
+  }
+  function applyReply() { S.pendingReply = false; beep('coming'); go('coming', '担当者の返事 → 向かっています (COMING)'); }
+  function resetByStaff() {
+    if (['sent', 'coming', 'sorry', 'failed'].includes(S.mode)) { beep('reset'); go('idle', '担当者が長押し → 待機 (PUSH)'); S.notifs.forEach((n) => { n.done = true; }); renderNotifs(); }
+    else log('待機に戻すのは、呼び出しのあとだけ');
+  }
+
+  function step() {
+    switch (S.mode) {
+      case 'calling':
+        if (S.t >= S.doneAt) {
+          if (S.wifi) {
+            beep('sent'); go('sent', '届いた → SENT');
+            notify('🔔 ブースで呼ばれています', `話を聞きたい人がいます！(${S.callClock})`, 5);
+          } else {
+            S.attempts++;
+            if (S.attempts >= 3) { beep('fail'); go('failed', 'やり直しが3回とも失敗 → RETRY'); }
+            else { S.doneAt = S.t + [0, 5, 15][S.attempts] + 3; log(`送れなかった → ${[0, 5, 15][S.attempts]}秒後にやり直し (${S.attempts}/3)`); }
+          }
+        }
+        break;
+      case 'sent': {
+        const el = S.t - S.t0;
+        if (el >= 120 && !S.n2) { S.n2 = true; if (S.wifi) notify('🔔 まだお待ちです', `話を聞きたい人がいます！(${S.callClock}から・2分経過)`, 5); }
+        if (el >= 300 && !S.n5) { S.n5 = true; if (S.wifi) notify('🔔 まだお待ちです', `話を聞きたい人がいます！(${S.callClock}から・5分経過)`, 5); }
+        if (el >= 600) { go('sorry', '10分返事なし → お待たせしています (QR)'); if (S.wifi) notify('来場者に連絡先を案内しました', '10分たったので、画面に QR を出しました', 3); }
+        break;
+      }
+      case 'coming': if (S.t - S.t0 >= 300) go('idle', '5分たった → 待機 (PUSH)'); break;
+      case 'sorry': if (S.t - S.t0 >= 120) go('idle', '2分たった → 待機 (PUSH)'); break;
+      case 'failed': if (S.t - S.t0 >= 30) go('idle', '30秒たった → 待機 (PUSH)'); break;
+    }
+    if (S.pendingReply && S.wifi && (S.mode === 'sent' || S.mode === 'sorry')) applyReply();
+  }
+
+  const notifsEl = document.getElementById('notifs'), emptyEl = document.getElementById('pempty');
+  function renderNotifs() {
+    notifsEl.innerHTML = '';
+    S.notifs.forEach((n) => {
+      const li = document.createElement('li');
+      const b = document.createElement('button');
+      b.type = 'button'; b.className = 'notif' + (n.done ? ' done' : '');
+      b.innerHTML = `<span class="top"><span>NTFY</span><span>${n.time}</span></span><b></b><span></span>`;
+      b.querySelector('b').textContent = n.title; b.querySelector('span:last-child').textContent = n.body;
+      b.addEventListener('click', reply);
+      li.appendChild(b); notifsEl.appendChild(li);
+    });
+    emptyEl.hidden = S.notifs.length > 0;
+  }
+
+  // ---- 入力 ----
+  const dev = document.getElementById('dev');
+  dev.addEventListener('pointerdown', (e) => { e.preventDefault(); dev.focus(); press(); S.holdStart = performance.now(); });
+  const endHold = () => { S.holdStart = null; };
+  dev.addEventListener('pointerup', endHold); dev.addEventListener('pointerleave', endHold); dev.addEventListener('pointercancel', endHold);
+  dev.addEventListener('keydown', (e) => { if (e.code === 'Space' || e.code === 'Enter') { e.preventDefault(); if (!e.repeat) press(); } });
+  document.getElementById('b-press').addEventListener('click', press);
+  document.getElementById('b-reply').addEventListener('click', reply);
+  document.getElementById('b-reset').addEventListener('click', resetByStaff);
+  document.getElementById('b-restart').addEventListener('click', restart);
+  document.getElementById('b-wifi').addEventListener('click', () => { S.wifi = !S.wifi; log(S.wifi ? 'Wi-Fi がつながった' : 'Wi-Fi が切れた'); syncButtons(); });
+  document.getElementById('b-sound').addEventListener('click', () => { soundOn = !soundOn; syncButtons(); });
+  document.getElementById('b-present').addEventListener('click', () => {
+    if (S.mode === 'present') go('idle', '在席モードを解除 → 待機 (PUSH)'); else go('present', '在席モード → HELLO');
+    syncButtons();
+  });
+  document.querySelectorAll('[data-speed]').forEach((b) => b.addEventListener('click', () => { S.speed = +b.dataset.speed; syncButtons(); }));
+  function syncButtons() {
+    const set = (id, on, label) => { const b = document.getElementById('b-' + id); b.setAttribute('aria-pressed', String(on)); document.getElementById('s-' + id).textContent = label; };
+    set('wifi', S.wifi, S.wifi ? 'ON' : 'OFF');
+    set('sound', soundOn, soundOn ? 'ON' : 'OFF');
+    set('present', S.mode === 'present', S.mode === 'present' ? 'ON' : 'OFF');
+    document.querySelectorAll('[data-speed]').forEach((b) => b.setAttribute('aria-pressed', String(+b.dataset.speed === S.speed)));
+  }
+
+  // ---- 画面一覧と方向性 ----
+  const STATES = [
+    { v: { mode: 'idle' }, name: '待機', id: 'idle', when: '起動時、各状態の終わり', snd: '−', copy: '押して担当者を呼ぶ / Press to call staff' },
+    { v: { mode: 'calling' }, name: '呼び出し中', id: 'calling', when: '押した直後〜送れるまで', snd: 'ピッ', copy: '呼び出しています / Calling staff' },
+    { v: { mode: 'sent', el: 42 }, name: '届いた', id: 'sent', when: '送れた〜1分', snd: 'ピロン', copy: '担当者に届きました / まもなく戻ります' },
+    { v: { mode: 'sent', el: 83 }, name: '届いた (1分後)', id: 'sent+qr', when: '1分〜10分', snd: '−', copy: 'まもなく戻ります / お急ぎの方はこちら' },
+    { v: { mode: 'coming' }, name: '向かっています', id: 'coming', when: '担当者の返事〜5分', snd: 'ピンポーン', copy: '担当者が向かっています / このままお待ちください' },
+    { v: { mode: 'sorry' }, name: 'お待たせ', id: 'sorry', when: '10分返事なし〜2分', snd: '−', copy: 'お待たせしています / ご連絡はこちらから' },
+    { v: { mode: 'failed' }, name: '失敗', id: 'failed', when: 'やり直し3回とも失敗〜30秒', snd: 'ポッ ポッ', copy: 'うまく届きませんでした / もう一度押してください' },
+    { v: { mode: 'present' }, name: '在席 (拡張)', id: 'present', when: '担当者が切り替え', snd: '−', copy: '担当者がいます / お気軽にお声がけください' },
+  ];
+  const gallery = document.getElementById('gallery');
+  STATES.forEach((s) => {
+    const el = document.createElement('article'); el.className = 'screen';
+    el.innerHTML = `<h3></h3><div class="dial sm"><canvas></canvas></div><dl><dt>いつ</dt><dd></dd><dt>文言</dt><dd></dd><dt>音</dt><dd></dd></dl>`;
+    const h = el.querySelector('h3'); h.textContent = s.name + ' '; const c = document.createElement('code'); c.textContent = s.id; h.appendChild(c);
+    const dds = el.querySelectorAll('dd'); dds[0].textContent = s.when; dds[1].textContent = s.copy; dds[2].textContent = s.snd;
+    gallery.appendChild(el); s.canvas = el.querySelector('canvas');
+  });
+
+  let ctxs = [];
+  function setupAll() {
+    ctxs = [{ ctx: setup(dev), live: true }];
+    STATES.forEach((s) => ctxs.push({ ctx: setup(s.canvas), v: s.v }));
+    document.querySelectorAll('canvas[data-dir]').forEach((c) => ctxs.push({ ctx: setup(c), v: { mode: 'idle', style: c.dataset.dir } }));
+  }
+
+  let last = performance.now();
+  function frame(now) {
+    const dt = Math.min(0.1, (now - last) / 1000); last = now;
+    S.t += dt * S.speed;
+    step();
+    let hold = 0;
+    if (S.holdStart != null) {
+      const h = now - S.holdStart;
+      if (h > 800 && ['sent', 'coming', 'sorry', 'failed'].includes(S.mode)) {
+        hold = (h - 800) / 2200;
+        if (hold >= 1) { S.holdStart = null; resetByStaff(); hold = 0; }
+      }
+    }
+    const fxP = (now - S.fxAt) / 260;
+    const live = {
+      mode: S.mode, el: S.t - S.t0, wifi: S.wifi, retry: S.mode === 'calling' && S.attempts > 0,
+      toast: now < S.toastUntil ? S.toast : null, fx: fxP < 1 ? fxP : null, fxKind: S.fxKind, hold,
+    };
+    for (const c of ctxs) render(c.ctx, c.live ? live : c.v, now);
+    document.getElementById('simclock').textContent = mmss(S.t);
+    document.getElementById('ptime').textContent = clockOf(S.t);
+    requestAnimationFrame(frame);
+  }
+
+  restart();
+  setupAll();
+  window.addEventListener('resize', setupAll);
+  requestAnimationFrame(frame);
+  // フォントが読み込まれたら描き直しに反映される（毎フレーム描いているので待つだけ）
+  if (document.fonts && document.fonts.load) {
+    document.fonts.load(`700 19px "BIZ UDPGothic"`, '押して担当者を呼ぶ呼び出しています届きましたまもなく戻りますお急ぎの方はこちら向かっていますこのままお待ちくださいお待たせしています連絡うまくもう一度押席外長機').catch(() => {});
+    document.fonts.load(`400 12px "BIZ UDPGothic"`, 'ただいま席を外していますお待ち').catch(() => {});
+  }
+})();
+</script>
