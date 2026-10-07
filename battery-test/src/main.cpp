@@ -168,6 +168,7 @@ void draw(uint32_t now) {
 
 void setup() {
   auto cfg = M5.config();
+  cfg.serial_baudrate = 115200;  // M5Unified 0.2.x は既定で Serial.begin() を呼ばないため明示する
   M5Dial.begin(cfg, true, false);  // encoder: on, RFID: off
 
   prefs.begin("battest", false);
