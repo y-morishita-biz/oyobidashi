@@ -12,14 +12,13 @@ import numpy as np
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import render_preview as rp  # noqa: E402
 
-# 部品の名前（ビューアで色を替えたり隠したりするのに使う。文字コードの影響を受けないよう英字）
-NAMES = ["plate", "raised", "ring", "device", "device", "device", "device", "screen", "battery", "foot", "foot"]
 
 
 def main():
-    parts = rp.assembled_parts()
+    parts = rp.assembled_parts("B")
     out = []
-    for (shape, color), name in zip(parts, NAMES):
+    # 名前はビューアで色を替えたり隠したりするのに使う（文字コードの影響を受けないよう英字）
+    for name, color, shape in parts:
         verts, tris = shape.tessellate(0.08, 0.25)
         # world（X 右、Y 奥、Z 上）→ three.js（x 右、y 上、z 手前）
         v = np.array([(p.X, p.Z, -p.Y) for p in verts], dtype=np.float32)

@@ -1,3 +1,4 @@
+<meta charset="utf-8">
 <title>oyobidashi プレート</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -116,12 +117,22 @@ code { font-family: var(--f-mono); font-size: .85em; }
 <header class="hero">
   <div class="eyebrow">oyobidashi · plate · 2026-10-07</div>
   <h1>M5Dial を埋め込むプレート</h1>
-  <p class="lead">展示ブースの机に立てて置く、呼び出しボタンのプレートです。Bambu Lab A1 mini (造形範囲 180 × 180 × 180 mm) で、文字と装飾を少し盛り上げて2色で造形します。形は <b>B 横長 (170 × 110 mm)</b> に決まり、3D モデルを作りました。下のビューアで回して確かめられます。</p>
+  <p class="lead">展示ブースの机に、地面から 20° で寝かせて置く呼び出しボタンのプレートです。Bambu Lab A1 mini (造形範囲 180 × 180 × 180 mm) で、文字を少し盛り上げて2色で造形します。形は横長 170 × 110 mm に決まりました。M5Dial は付属のネジ式のリングでプレートを挟んで留め、左右の側板で支えます。</p>
 </header>
 
+<section id="layout">
+  <h2>レイアウト <small>3 options</small></h2>
+  <p>英語、「回すと製品が見られます」、dotting dots のロゴを外し、見出し・一文・3ステップだけにしました。机に 20° で寝かせて見下ろす置き方なので、プレートの上側が奥、下側が手前になります。左右の灰色の帯 (4 mm) は側板の溝に入る部分で、文字を置いていません。</p>
+  <div class="concepts">
+    <article class="concept"><h3>A. 左にダイヤル、右に説明</h3><div class="front-img"><img src="preview_front_A.png" alt="レイアウト A の正面図"></div><ul><li>前回の案の並びのまま、要素を減らして文字を大きくした</li><li>見出しが小さめ</li></ul></article>
+    <article class="concept rec"><span class="badge">おすすめ</span><h3>B. 上に見出し、下にダイヤルと3ステップ</h3><div class="front-img"><img src="preview_front_B.png" alt="レイアウト B の正面図"></div><ul><li>奥 (上) の見出しは遠くから目に入り、手前 (下) のダイヤルは手が届きやすい</li><li>見出しをいちばん大きくできる</li></ul></article>
+    <article class="concept"><h3>C. 右にダイヤル、左に説明</h3><div class="front-img"><img src="preview_front_C.png" alt="レイアウト C の正面図"></div><ul><li>右手で触りやすい</li><li>バッテリーは左の裏に貼る</li></ul></article>
+  </div>
+</section>
+
 <section id="model">
-  <h2>3D モデル <small>B · 170 × 110 mm</small></h2>
-  <p>ドラッグで回転、ホイールやピンチで拡大できます。M5Dial とバッテリーは、位置を確かめるための仮の形です (公式データの寸法から作った円柱と箱)。</p>
+  <h2>3D モデル <small>layout B · 170 × 110 × 3 mm · 20°</small></h2>
+  <p>ドラッグで回転、ホイールやピンチで拡大できます。M5Dial・付属のリング・バッテリーは、位置を確かめるための仮の形です (公式データの寸法から作った円柱と箱)。</p>
   <div class="viewer">
     <canvas id="viewer3d" aria-label="組み立てたプレートの 3D ビュー。ドラッグで回転"></canvas>
     <div class="bar">
@@ -144,8 +155,8 @@ code { font-family: var(--f-mono); font-size: .85em; }
     </div>
     <p class="status" id="viewer-status">読み込み中…</p>
   </div>
-  <div class="front-img"><img src="preview_front.png" alt="プレートの正面図。左に M5Dial と回す矢印、右に MAKER CALL のドット見出し、説明、3ステップ"></div>
-  <p class="note">提案から変えた点:見出しのドットは右端に収まるよう間隔を詰めた (はみ出していたため)。3ステップは横3列だと「制作者の iPhone に届く」が 2.5 mm と小さく潰れるので、右の列に縦3行で並べた (日本語 4.5 mm、英語 3 mm)。</p>
+  <div class="front-img"><img src="preview_side.png" alt="横から見た図。プレートが地面から20度で側板に支えられ、裏に M5Dial、付属のリング、USB-C のプラグ、バッテリーがある"></div>
+  <p class="note">横から見た図:プレートの前の端を机から 20 mm 浮かせて、裏の M5Dial の本体、真下へ出る USB-C のプラグ、バッテリーが机に当たらないようにしています。寝かせたので、押しても後ろへ倒れにくくなりました。</p>
 </section>
 
 <section id="parts">
@@ -154,23 +165,23 @@ code { font-family: var(--f-mono); font-size: .85em; }
     <table>
       <thead><tr><th>ファイル</th><th>大きさ</th><th>数</th><th>色</th><th>造形</th></tr></thead>
       <tbody>
-        <tr><th><code>plate_base.stl</code><br><code>plate_raised.stl</code></th><td class="n">170 × 110 × 4.7<br>+ 盛り上げ 0.8</td><td>1</td><td>2色 (地 / 文字)</td><td>表を上にして平らに。Bambu Studio で2つを「1つのオブジェクトの複数パーツ」として読み込み、色を割り当てる。色が替わるのは高さ 4.7 mm の1回だけ</td></tr>
-        <tr><th><code>clamp_ring.stl</code></th><td class="n">Ø66 × 3</td><td>1</td><td>グレー</td><td>平らに。サポート不要</td></tr>
-        <tr><th><code>foot.stl</code></th><td class="n">20 × 92 × 17.8</td><td>2</td><td>グレー</td><td>そのままの向きで (底が平ら)。サポート不要</td></tr>
+        <tr><th><code>fit_test.stl</code></th><td class="n">60 × 60 × 3</td><td>1</td><td>どれでも</td><td>最初に造形する試し板。穴に M5Dial を通し、付属のリングで挟めるか、USB-C が挿せるかを確かめる</td></tr>
+        <tr><th><code>plate_base.stl</code><br><code>plate_raised.stl</code></th><td class="n">170 × 110 × 3<br>+ 盛り上げ 0.8</td><td>1</td><td>2色 (地 / 文字)</td><td>表を上にして平らに。Bambu Studio で2つを「1つのオブジェクトの複数パーツ」として読み込み、色を割り当てる。色が替わるのは高さ 3 mm の1回だけ</td></tr>
+        <tr><th><code>frame_left.stl</code><br><code>frame_right.stl</code></th><td class="n">112 × 64 × 8</td><td>各1</td><td>グレー</td><td>そのままの向き (溝が上)。サポート不要</td></tr>
         <tr><th><code>oyobidashi_plate.step</code></th><td colspan="4">組み立てた状態の STEP。寸法の確認や、Rhino などでの手直しに</td></tr>
       </tbody>
     </table>
   </div>
-  <p class="note">目安の設定:ノズル 0.4 mm、積層 0.2 mm (盛り上げは4層)、壁 3周、インフィル 15%。ファイルは <code>plate/out/</code>、作り直しは <code>plate/make_plate.py</code> (寸法はファイルの先頭にまとめてある)。</p>
+  <p class="note">目安の設定:ノズル 0.4 mm、積層 0.2 mm (盛り上げは4層)、壁 3周、インフィル 15%。ファイルは <code>plate/out/</code>、作り直しは <code>plate/make_plate.py</code> (寸法はファイルの先頭。<code>--layout A</code> などでレイアウトを選ぶ)。</p>
 </section>
 
 <section id="assemble">
   <h2>組み立て <small>assembly</small></h2>
   <ol class="steps">
-    <li>M5Dial を、USB-C を下にして前から穴に差し込む<span>回らない縁 (フランジ) が穴にはまり、裏へ 0.3 mm 出る</span></li>
-    <li>裏から押さえのリングを当てて、M3 × 8 mm のねじ3本で留める<span>下穴 Ø2.6 にねじを直接ねじ込む。リングの真下の切り欠きから USB-C ケーブルを出す</span></li>
-    <li>USB-C ケーブルをバッテリーへつなぎ、バッテリーをプレートの裏の右側に両面テープで貼る</li>
-    <li>左右の足の溝に、プレートの下の辺を差し込む<span>後ろへ 18° 傾いて立つ</span></li>
+    <li>M5Dial の背面の、付属のリングを外す</li>
+    <li>M5Dial を、USB-C を下にして前からプレートの穴に差し込み、裏からリングを締めて挟む</li>
+    <li>USB-C ケーブルを挿し、バッテリーをプレートの裏の右上に両面テープで貼る<span>リングを締めてから貼る (バッテリーがあるとリングを回しにくい)</span></li>
+    <li>左右の側板の溝に、プレートの左右の端を上 (奥) から差し込む<span>溝の下の端でプレートが止まる。地面から 20° になる</span></li>
     <li>担当者メニューの「画面の向き」で、画面が正面を向くように 10° 刻みで合わせる</li>
   </ol>
 </section>
@@ -178,11 +189,9 @@ code { font-family: var(--f-mono); font-size: .85em; }
 <section id="check">
   <h2>確かめたいこと <small>before printing</small></h2>
   <ol class="asks">
-    <li><b>色の組み合わせ</b><span>上のビューアで3通りを比べられます。足と押さえのリングはグレーを想定しています</span></li>
-    <li><b>回らない縁の確認</b><span>公式データから「前面のリングだけが回り、その後ろの縁 (Ø50.9、奥行 4.5 mm) は回らない」と読み取りました。実物で、後ろの縁を押さえてもリングが回るか確かめてください。回る部分を押さえてしまうと、ダイヤルが使えなくなります</span></li>
-    <li><b>はまり具合の試し造形</b><span>穴 Ø51.5 と押さえのリング内径 Ø44.8 は、公式データからの値です。先にリングだけを造形して M5Dial に当ててみると、プレート全体を造形し直さずに調整できます</span></li>
-    <li><b>強く押したときの安定</b><span>画面の押し込みは重いので、強く押すと後ろへ倒れる可能性があります。足の裏に滑り止めや両面テープを貼ると安心です。足をもっと後ろへ伸ばすこともできます</span></li>
-    <li><b>ねじ</b><span>M3 × 8 mm を3本使います。手持ちがなければ、押さえのリングを接着する形にも変えられます</span></li>
+    <li><b>レイアウト</b><span>A / B (おすすめ) / C のどれにするか</span></li>
+    <li><b>試し板で、挟める厚さを確かめる</b><span>プレートの厚さ 3 mm、穴 Ø44.6 は公式データからの値です。付属のリングが十分にかかるか、リングを締めたときに USB-C が挿せるか、回るリングがプレートにこすれないかを、試し板で確かめてから本番を造形するのが安全です</span></li>
+    <li><b>色の組み合わせ</b><span>上のビューアで3通りを比べられます。側板はグレーを想定しています</span></li>
   </ol>
 </section>
 
@@ -193,9 +202,9 @@ code { font-family: var(--f-mono); font-size: .85em; }
       <thead><tr><th>もの</th><th>寸法</th><th>設計で気をつけること</th></tr></thead>
       <tbody>
         <tr><th>M5Dial 全体</th><td class="n">Ø51.0 × 奥行 32.3 mm</td><td>公式データ (Dial.stl) と公式仕様から。46 g</td></tr>
-        <tr><th>回るリング (前面)</th><td class="n">Ø49.7、奥行 約10 mm</td><td>製品カードと担当者メニューで回すので、指でつまめるように前に出す</td></tr>
-        <tr><th>回らないフランジ</th><td class="n">Ø50.9、奥行 約4 mm</td><td>ここを後ろから受けて、押されたときの力を支える</td></tr>
-        <tr><th>背面の本体</th><td class="n">Ø44、奥行 約12 mm</td><td>プレートの裏に出る。USB-C と端子の位置は実物で確認が必要</td></tr>
+        <tr><th>回るリング (前面)</th><td class="n">Ø49.7、奥行 約10 mm</td><td>製品カードと担当者メニューで回すので、プレートの前に出す</td></tr>
+        <tr><th>背面のネジ</th><td class="n">外径 Ø44、長さ 約11 mm</td><td>プレートの穴に通す。付属のリング (外径 Ø50.8、高さ 5 mm) がナットになり、プレートを挟んで留める</td></tr>
+        <tr><th>USB-C</th><td class="n">背面の本体の真下</td><td>リングの後ろ側にあるので、プレートが厚いとリングでふさがる。挟める厚さは約 3.5 mm まで</td></tr>
         <tr><th>モバイルバッテリー</th><td class="n">92 × 60 × 22 mm、約180 g</td><td>Anker PowerCore 10000 (A1263)。背面に両面テープ。重りにもなる</td></tr>
         <tr><th>A1 mini</th><td class="n">180 × 180 × 180 mm、4色まで</td><td>今回は2色。平らな板を、表を下にして造形すると文字がきれい</td></tr>
       </tbody>
@@ -204,7 +213,7 @@ code { font-family: var(--f-mono); font-size: .85em; }
 </section>
 
 <section id="concepts">
-  <h2>検討した3つの方向 <small>B に決定</small></h2>
+  <h2>検討の経緯:最初の3つの方向 <small>B 横長に決定</small></h2>
   <p>どの案も、文言の役割は同じです。遠くから「何のプレートか」を伝える見出し、近づいた人への一文と3ステップ、M5Dial のまわりの「回せる」サインです。見出しの英語は、画面と同じ 5×7 のドットで描きます。dotting dots のドットとして、2色目でくっきり出ます。</p>
   <div class="toolbar">
     <span class="label">プレートの色</span>
@@ -237,39 +246,6 @@ code { font-family: var(--f-mono); font-size: .85em; }
   <p class="note">色の比較:オレンジ地は、待機画面の「オレンジ = 触れる番」をプレート全体に広げる案です。遠くから目に入り、プレートごとボタンに見えます。黒地は、M5Dial の黒いリングと一体に見え、落ち着いた印象です。</p>
 </section>
 
-<section id="side">
-  <h2>立て方とバッテリー <small>side view</small></h2>
-  <p>プレートは平らな板として造形し、裏に差し込む脚 (別に平らに造形) で後ろへ18°傾けて立てます。M5Dial は前からリングを出し、フランジを裏の受けで支えて、裏から押さえのリングでとめます。触れたときに後ろへ押されても、脚とバッテリーの重さで倒れにくくなります。</p>
-  <div class="section-fig"><svg id="svgSide" viewBox="0 0 300 140" aria-label="横から見た図。プレートが18度傾き、裏に脚とバッテリーがある"></svg></div>
-  <div class="scroll">
-    <table>
-      <thead><tr><th>部品</th><th>造形</th><th>役割</th></tr></thead>
-      <tbody>
-        <tr><th>プレート</th><td>表を下にして平らに。2色 (文字は表面から 0.6 mm 埋め込み)</td><td>看板。M5Dial の穴と、裏の受けのリングを一体で</td></tr>
-        <tr><th>押さえのリング</th><td>平らに、1色</td><td>M5Dial を裏からはさんで固定。ねじ2本か、回して締めるツメ</td></tr>
-        <tr><th>脚</th><td>平らに、1色</td><td>裏の溝に差し込んで18°に立てる。外せば平らにしまえる</td></tr>
-      </tbody>
-    </table>
-  </div>
-</section>
-
-<section id="copy">
-  <h2>文言の案 <small>copy</small></h2>
-  <div class="scroll">
-    <table>
-      <thead><tr><th>場所</th><th>日本語</th><th>英語</th></tr></thead>
-      <tbody>
-        <tr><th>見出し (ドット)</th><td>−</td><td>MAKER CALL</td></tr>
-        <tr><th>一文</th><td>制作者が席を外しているときは、画面にタッチしてください</td><td>Tap the screen to call the maker</td></tr>
-        <tr><th>3ステップ</th><td>1 タッチ / 2 制作者の iPhone に届く / 3 画面でお知らせ</td><td>Tap / We get notified / Check the screen</td></tr>
-        <tr><th>ダイヤルのサイン</th><td>回すと製品が見られます</td><td>Turn to browse</td></tr>
-        <tr><th>ブランド</th><td>−</td><td>dotting dots</td></tr>
-      </tbody>
-    </table>
-  </div>
-  <p class="note">2色の造形では、細い線が潰れやすいので、日本語は高さ 5 mm 以上、英語の小さな文字は 3.5 mm 以上を目安にしています。</p>
-</section>
-
 </div>
 
 <script src="plate-model.js"></script>
@@ -290,12 +266,12 @@ try {
   const camera = new THREE.PerspectiveCamera(30, 16 / 10, 1, 5000);
   const controls = new OrbitControls(camera, canvas);
   controls.enableDamping = true;
-  const target = new THREE.Vector3(85, 45, -30);
+  const target = new THREE.Vector3(85, 28, -60);
   controls.target.copy(target);
   scene.add(new THREE.HemisphereLight(0xffffff, 0x8a8a8a, 1.6));
   const sun = new THREE.DirectionalLight(0xffffff, 1.6); sun.position.set(-150, 260, 220); scene.add(sun);
   const fill = new THREE.DirectionalLight(0xffffff, 0.6); fill.position.set(220, 120, -200); scene.add(fill);
-  const grid = new THREE.GridHelper(400, 40, 0xbbbbbb, 0xdddddd); grid.position.set(85, 0, -30); scene.add(grid);
+  const grid = new THREE.GridHelper(400, 40, 0xbbbbbb, 0xdddddd); grid.position.set(85, 0, -60); scene.add(grid);
 
   const b64 = (s) => Uint8Array.from(atob(s), (c) => c.charCodeAt(0)).buffer;
   const meshes = data.map((p) => {
@@ -318,7 +294,7 @@ try {
     document.querySelectorAll('[data-scheme]').forEach((x) => x.setAttribute('aria-pressed', String(x === b)));
     setScheme(b.dataset.scheme);
   }));
-  const VIEWS = { front: [85, 70, 330], iso: [-150, 170, 260], side: [-380, 60, -20], back: [300, 170, -330] };
+  const VIEWS = { front: [85, 260, 170], iso: [-130, 210, 170], side: [-360, 60, -60], back: [300, 170, -380] };
   const setView = (k) => { camera.position.set(...VIEWS[k]); controls.target.copy(target); controls.update(); };
   document.querySelectorAll('[data-view]').forEach((b) => b.addEventListener('click', () => {
     document.querySelectorAll('[data-view]').forEach((x) => x.setAttribute('aria-pressed', String(x === b)));
@@ -328,7 +304,7 @@ try {
   dummyBtn.addEventListener('click', () => {
     const on = dummyBtn.getAttribute('aria-pressed') !== 'true';
     dummyBtn.setAttribute('aria-pressed', String(on));
-    meshes.filter((m) => /device|screen|battery/.test(m.userData.name)).forEach((m) => { m.visible = on; });
+    meshes.filter((m) => /device|screen|battery|nut/.test(m.userData.name)).forEach((m) => { m.visible = on; });
   });
   setView('iso');
   const resize = () => {
@@ -337,7 +313,7 @@ try {
   };
   new ResizeObserver(resize).observe(canvas); resize();
   renderer.setAnimationLoop(() => { controls.update(); renderer.render(scene, camera); });
-  status.textContent = '黄色 = プレート、黒 = 盛り上げた文字、グレー = 押さえのリングと足、濃いグレー = M5Dial とバッテリー (仮の形)';
+  status.textContent = '黄色 = プレート、黒 = 盛り上げた文字、グレー = 側板、濃いグレー = M5Dial・付属のリング・バッテリー (仮の形)';
 } catch (e) {
   status.textContent = '3D ビューを表示できませんでした: ' + e.message;
 }
@@ -451,50 +427,6 @@ try {
     txt(s, 'Tap → We get notified → Check the screen', cx, 121.5, 2.6, 400);
     txt(s, 'dotting dots', cx, 132, 3, 400);
     dims(s, 0, 0, 150, 0, 'Ø150', true); dims(s, 0, 0, 0, flat, '140', false);
-  })();
-
-  // ---- 横から見た図 ----
-  (() => {
-    const s = document.getElementById('svgSide');
-    const css = getComputedStyle(document.documentElement);
-    const c = (k) => css.getPropertyValue(k).trim();
-    const desk = 120;
-    el('line', { x1: 10, y1: desk, x2: 290, y2: desk, stroke: c('--dim'), 'stroke-width': .6 }, s);
-    // プレート（Bの高さ 110 mm を 18° 傾ける。縮尺 0.8）
-    const k = 0.8, H = 110 * k, T = 4 * k, ang = 18 * Math.PI / 180;
-    const bx = 120, by = desk;
-    const ux = Math.sin(ang), uy = -Math.cos(ang); // 上向き（後ろに倒れる）
-    const nx = Math.cos(ang), ny = Math.sin(ang);   // 背面の向き
-    const P = (u, n) => [bx + ux * u + nx * n, by + uy * u + ny * n];
-    const poly = (pts, fill, op = 1) => el('polygon', { points: pts.map((p) => p.join(',')).join(' '), fill, opacity: op }, s);
-    poly([P(0, 0), P(H, 0), P(H, T), P(0, T)], c('--pla-orange'));
-    // M5Dial（高さ 52 mm の位置、前にリング、後ろに本体）
-    const du = 52 * k;
-    poly([P(du - 25 * k, -12 * k), P(du + 25 * k, -12 * k), P(du + 25 * k, 0), P(du - 25 * k, 0)], c('--dev-bezel'));
-    poly([P(du - 25 * k, T), P(du + 25 * k, T), P(du + 25 * k, T + 4 * k), P(du - 25 * k, T + 4 * k)], c('--dev-bezel-hi'));
-    poly([P(du - 22 * k, T + 4 * k), P(du + 22 * k, T + 4 * k), P(du + 22 * k, T + 16 * k), P(du - 22 * k, T + 16 * k)], c('--dev-bezel'));
-    // 押さえのリング
-    poly([P(du - 28 * k, T), P(du - 23 * k, T), P(du - 23 * k, T + 6 * k), P(du - 28 * k, T + 6 * k)], c('--pla-black'));
-    poly([P(du + 23 * k, T), P(du + 28 * k, T), P(du + 28 * k, T + 6 * k), P(du + 23 * k, T + 6 * k)], c('--pla-black'));
-    // バッテリー（下の方に貼る、厚さ 22 mm）
-    poly([P(6 * k, T), P(6 * k + 60 * k * 0.0 + 22 * k * 0, T), P(6 * k, T)], c('--battery'));
-    poly([P(4 * k, T), P(26 * k, T), P(26 * k, T + 22 * k), P(4 * k, T + 22 * k)], c('--battery'));
-    // 脚（背面の溝から机へ）
-    const [lx, ly] = P(80 * k, T);
-    el('line', { x1: lx, y1: ly, x2: lx + 46, y2: desk, stroke: c('--pla-black'), 'stroke-width': 3.2, 'stroke-linecap': 'round' }, s);
-    // ケーブル
-    const [cxx, cyy] = P(du - 18 * k, T + 16 * k), [bxx, byy] = P(15 * k, T + 22 * k);
-    el('path', { d: `M${cxx} ${cyy} C ${cxx + 18} ${cyy + 10}, ${bxx + 20} ${byy - 10}, ${bxx} ${byy}`, stroke: c('--dim'), 'stroke-width': 1.2, fill: 'none', 'stroke-dasharray': '2 1.5' }, s);
-    // 注記
-    const note = (x, y, t2, anchor = 'start') => { const t = el('text', { x, y, 'font-size': 6, fill: c('--fg'), 'text-anchor': anchor, 'font-family': 'IBM Plex Sans JP, sans-serif' }, s); t.textContent = t2; };
-    const [fx, fy] = P(du, -12 * k);
-    note(fx - 8, fy - 6, '回るリング (前に出す)', 'end');
-    note(P(H, 0)[0] - 4, P(H, 0)[1] - 4, 'プレート 4 mm', 'end');
-    note(lx + 50, desk - 22, '脚 (差し込み)');
-    note(P(4 * k, T + 22 * k)[0] + 10, desk - 4, 'バッテリー');
-    note(P(du + 28 * k, T + 6 * k)[0] + 6, P(du + 28 * k, T + 6 * k)[1], '押さえのリング');
-    const t = el('text', { x: bx + 6, y: desk - 6, 'font-size': 6, fill: c('--accent'), 'font-family': 'IBM Plex Mono, monospace' }, s); t.textContent = '18°';
-    note(20, 18, '← 前 (来場者)');
   })();
 
   // ---- 色の切り替え ----
