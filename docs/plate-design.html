@@ -115,23 +115,23 @@ code { font-family: var(--f-mono); font-size: .85em; }
 
 <div class="wrap">
 <header class="hero">
-  <div class="eyebrow">oyobidashi · plate · 2026-10-07</div>
+  <div class="eyebrow">oyobidashi · plate · 2026-10-07 · layout B 確定</div>
   <h1>M5Dial を埋め込むプレート</h1>
-  <p class="lead">展示ブースの机に、地面から 20° で寝かせて置く呼び出しボタンのプレートです。Bambu Lab A1 mini (造形範囲 180 × 180 × 180 mm) で、文字を少し盛り上げて2色で造形します。形は横長 170 × 110 mm に決まりました。M5Dial は付属のネジ式のリングでプレートを挟んで留め、左右の側板で支えます。</p>
+  <p class="lead">展示ブースの机に、地面から 20° で寝かせて置く呼び出しボタンのプレートです。Bambu Lab A1 mini (造形範囲 180 × 180 × 180 mm) で、文字を少し盛り上げて2色で造形します。形は横長 170 × 110 mm、レイアウトは <b>B (上に見出し、下にダイヤルと3ステップ) に確定</b>し、STEP / STL を書き出しました。M5Dial は付属のネジ式のリングでプレートを挟んで留め、左右の側板で支えます。</p>
 </header>
 
 <section id="layout">
-  <h2>レイアウト <small>3 options</small></h2>
+  <h2>レイアウト <small>B に決定</small></h2>
   <p>英語、「回すと製品が見られます」、dotting dots のロゴを外し、見出し・一文・3ステップだけにしました。机に 20° で寝かせて見下ろす置き方なので、プレートの上側が奥、下側が手前になります。左右の灰色の帯 (4 mm) は側板の溝に入る部分で、文字を置いていません。</p>
   <div class="concepts">
     <article class="concept"><h3>A. 左にダイヤル、右に説明</h3><div class="front-img"><img src="preview_front_A.png" alt="レイアウト A の正面図"></div><ul><li>前回の案の並びのまま、要素を減らして文字を大きくした</li><li>見出しが小さめ</li></ul></article>
-    <article class="concept rec"><span class="badge">おすすめ</span><h3>B. 上に見出し、下にダイヤルと3ステップ</h3><div class="front-img"><img src="preview_front_B.png" alt="レイアウト B の正面図"></div><ul><li>奥 (上) の見出しは遠くから目に入り、手前 (下) のダイヤルは手が届きやすい</li><li>見出しをいちばん大きくできる</li></ul></article>
+    <article class="concept rec"><span class="badge">決定</span><h3>B. 上に見出し、下にダイヤルと3ステップ</h3><div class="front-img"><img src="preview_front_B.png" alt="レイアウト B の正面図"></div><ul><li>奥 (上) の見出しは遠くから目に入り、手前 (下) のダイヤルは手が届きやすい</li><li>見出しをいちばん大きくできる</li></ul></article>
     <article class="concept"><h3>C. 右にダイヤル、左に説明</h3><div class="front-img"><img src="preview_front_C.png" alt="レイアウト C の正面図"></div><ul><li>右手で触りやすい</li><li>バッテリーは左の裏に貼る</li></ul></article>
   </div>
 </section>
 
 <section id="model">
-  <h2>3D モデル <small>layout B · 170 × 110 × 3 mm · 20°</small></h2>
+  <h2>3D モデル <small>layout B (確定) · 170 × 110 × 3 mm · 20°</small></h2>
   <p>ドラッグで回転、ホイールやピンチで拡大できます。M5Dial・付属のリング・バッテリーは、位置を確かめるための仮の形です (公式データの寸法から作った円柱と箱)。</p>
   <div class="viewer">
     <canvas id="viewer3d" aria-label="組み立てたプレートの 3D ビュー。ドラッグで回転"></canvas>
@@ -168,6 +168,7 @@ code { font-family: var(--f-mono); font-size: .85em; }
         <tr><th><code>fit_test.stl</code></th><td class="n">60 × 60 × 3</td><td>1</td><td>どれでも</td><td>最初に造形する試し板。穴に M5Dial を通し、付属のリングで挟めるか、USB-C が挿せるかを確かめる</td></tr>
         <tr><th><code>plate_base.stl</code><br><code>plate_raised.stl</code></th><td class="n">170 × 110 × 3<br>+ 盛り上げ 0.8</td><td>1</td><td>2色 (地 / 文字)</td><td>表を上にして平らに。Bambu Studio で2つを「1つのオブジェクトの複数パーツ」として読み込み、色を割り当てる。色が替わるのは高さ 3 mm の1回だけ</td></tr>
         <tr><th><code>frame_left.stl</code><br><code>frame_right.stl</code></th><td class="n">112 × 64 × 8</td><td>各1</td><td>グレー</td><td>そのままの向き (溝が上)。サポート不要</td></tr>
+        <tr><th><code>plate.step</code><br><code>frame_left.step</code><br><code>frame_right.step</code><br><code>fit_test.step</code></th><td colspan="4">上の部品の STEP (造形する向き)。plate.step は地と文字が別のボディなので、CAD でも色分けできる</td></tr>
         <tr><th><code>oyobidashi_plate.step</code></th><td colspan="4">組み立てた状態の STEP。寸法の確認や、Rhino などでの手直しに</td></tr>
       </tbody>
     </table>
@@ -189,7 +190,6 @@ code { font-family: var(--f-mono); font-size: .85em; }
 <section id="check">
   <h2>確かめたいこと <small>before printing</small></h2>
   <ol class="asks">
-    <li><b>レイアウト</b><span>A / B (おすすめ) / C のどれにするか</span></li>
     <li><b>試し板で、挟める厚さを確かめる</b><span>プレートの厚さ 3 mm、穴 Ø44.6 は公式データからの値です。付属のリングが十分にかかるか、リングを締めたときに USB-C が挿せるか、回るリングがプレートにこすれないかを、試し板で確かめてから本番を造形するのが安全です</span></li>
     <li><b>色の組み合わせ</b><span>上のビューアで3通りを比べられます。側板はグレーを想定しています</span></li>
   </ol>

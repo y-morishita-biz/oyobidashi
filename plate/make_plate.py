@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 # oyobidashi の M5Dial を埋め込むプレート（横長 170 x 110 mm）の 3D モデルを作り、STEP / STL を書き出す。
 #
-#   ~/.platformio/penv/bin/python plate/make_plate.py            # レイアウト B（おすすめ）
-#   ~/.platformio/penv/bin/python plate/make_plate.py --layout A
+#   ~/.platformio/penv/bin/python plate/make_plate.py            # レイアウト B（2026-10-07 決定）
+#   ~/.platformio/penv/bin/python plate/make_plate.py --layout A  # 検討した別案
 #
 # 出力（plate/out/）
 #   plate_base.stl     プレートの地（1色目）。表を上にして造形する
@@ -11,6 +11,7 @@
 #   frame_left.stl     プレートを地面から 20° に支える左の側板（外側の面を下にして造形）
 #   frame_right.stl    右の側板
 #   fit_test.stl       穴とネジのリングのはまり具合を確かめる、60 mm 角の試し板
+#   *.step             同じ部品の STEP（造形する向き。plate.step は地と文字の2つのボディ）
 #   oyobidashi_plate.step  上の部品をまとめた STEP（組み立てた状態）
 #
 # 固定のしかた
@@ -109,7 +110,7 @@ def layout(name):
         faces = dot_word("MAKER CALL", col, 92.0, 1.4)
         faces += [text(SENTENCE[0], col, 72.0, 5.4), text(SENTENCE[1], col, 64.0, 5.4)]
         faces += steps_column(col, 45.0, 12.0, 5.2)
-    elif name == "B":  # 上に見出しと一文、下にダイヤルと3ステップ
+    elif name == "B":  # 上に見出しと一文、下にダイヤルと3ステップ（決定）
         dev = (44.0, 36.0)
         faces = dot_word("MAKER CALL", W / 2, 92.0, 2.2, "center")
         faces.append(text(SENTENCE[0] + SENTENCE[1], W / 2, 74.0, 5.0, Align.CENTER))
@@ -219,16 +220,26 @@ def main():
         "plate_base": base, "plate_raised": raised,
         "frame_left": make_frame(False), "frame_right": make_frame(True), "fit_test": make_fit_test(),
     }
+    printed = {}
     for name, shape in shapes.items():
         if name.startswith("frame"):
             shape = for_printing(shape, name.endswith("right"))
+        shape.label = name
+        printed[name] = shape
         export_stl(shape, os.path.join(OUT, f"{name}.stl"), tolerance=0.05, angular_tolerance=0.2)
         bb = shape.bounding_box()
         print(f"{name:13s} {bb.size.X:6.1f} x {bb.size.Y:6.1f} x {bb.size.Z:5.1f} mm")
+    # STEP（造形する向き）。プレートは地と文字を別のボディにして、CAD でも色分けできるようにする
+    export_step(Compound([printed["plate_base"], printed["plate_raised"]], label="plate"),
+                os.path.join(OUT, "plate.step"))
+    for name in ("frame_left", "frame_right", "fit_test"):
+        export_step(printed[name], os.path.join(OUT, f"{name}.step"))
     loc = plate_location()
     xl, xr = frame_positions()
-    asm = Compound([loc * base, loc * raised, Pos(xl, 0, 0) * shapes["frame_left"],
-                    Pos(xr, 0, 0) * shapes["frame_right"]])
+    parts = [loc * base, loc * raised, Pos(xl, 0, 0) * shapes["frame_left"], Pos(xr, 0, 0) * shapes["frame_right"]]
+    for part, label in zip(parts, ("plate_base", "plate_raised", "frame_left", "frame_right")):
+        part.label = label
+    asm = Compound(parts, label="oyobidashi_plate")
     export_step(asm, os.path.join(OUT, "oyobidashi_plate.step"))
     print(f"layout {args.layout} -> plate/out/")
 
