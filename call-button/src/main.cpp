@@ -10,7 +10,7 @@
 //
 //  担当者の操作
 //    iPhone の通知のボタン          : 向かいます / 5分で戻ります / 30分で戻ります
-//    画面を押したままダイヤルを回す : 担当者メニュー（在席・離席・戻り時刻・音量）
+//    画面を押したままダイヤルを回す : 担当者メニュー（在席・離席・戻り時刻・音量・画面の向き）
 //    呼び出しのあと、画面を3秒長押し : 待機に戻す
 //
 //  状態
@@ -132,9 +132,12 @@ constexpr uint32_t K_PAPER_SUB = 0x707070;
 constexpr uint32_t K_PAPER_TRACK = 0xE2E2E2;
 
 // --- 担当者メニュー -----------------------------------------------------------
-enum MenuId { M_CLOSE, M_PRESENT, M_LEAVE, M_AWAY15, M_AWAY30, M_AWAY60, M_VOLUME, M_COUNT };
+enum MenuId {
+  M_CLOSE, M_PRESENT, M_LEAVE, M_AWAY15, M_AWAY30, M_AWAY60, M_VOLUME, M_ROTATE, M_COUNT
+};
 const char *const MENU_LABELS[] = {"閉じる", "在席にする", "離席にする", "15分で戻る",
-                                   "30分で戻る", "60分で戻る", nullptr};
+                                   "30分で戻る", "60分で戻る", nullptr, nullptr};
+constexpr int ROTATE_STEP_DEG = 10;  // 画面の向きを回す刻み（プレートへの取り付けの向きに合わせる）
 struct Volume {
   const char *label;
   uint8_t value;
@@ -190,6 +193,8 @@ bool menuArmed = false;  // メニューを開いた押下を離したか（離�
 int menuSel = M_CLOSE;
 uint32_t menuInputMs = 0;
 int volumeIdx = 1;
+int screenRotation = 0;   // 画面の向き（度、時計回り）。本体に保存する
+bool menuAdjust = false;  // 「画面の向き」を調整している
 int cardIdx = 0;  // 0 = 状態の画面、1〜CARD_COUNT = 製品カード
 int spinPos = 0;  // 待機中に回した位置（1段 = 1）
 uint32_t lastTurnMs = 0;
@@ -631,6 +636,7 @@ void openMenu(uint32_t now) {
   menuOpen = true;
   menuArmed = false;
   menuSel = M_CLOSE;  // 偶然開いて押しても閉じるだけになるように
+  menuAdjust = false;
   menuInputMs = now;
   encAcc = 0;
   play(SND_MENU);
@@ -638,6 +644,11 @@ void openMenu(uint32_t now) {
 }
 
 void closeMenu() {
+  if (menuAdjust) {
+    menuAdjust = false;
+    prefs.putUShort("rot", screenRotation);
+    Serial.printf("[call] screen rotation %d\n", screenRotation);
+  }
   menuOpen = false;
   Serial.println("[call] menu close");
 }
@@ -666,6 +677,16 @@ void menuConfirm(uint32_t now) {
       play(SND_RESET);
       closeMenu();
       enterAway(menuSel == M_AWAY15 ? 15 : menuSel == M_AWAY30 ? 30 : 60, now, true);
+      break;
+    case M_ROTATE:
+      // 1回目：調整を始める（回すとその場で画面が回る）／2回目：決める
+      if (!menuAdjust) {
+        menuAdjust = true;
+        play(SND_PRESS);
+      } else {
+        play(SND_RESET);
+        closeMenu();
+      }
       break;
     case M_VOLUME:
       volumeIdx = (volumeIdx + 1) % VOLUME_COUNT;
@@ -738,7 +759,11 @@ void updateInput(uint32_t now) {
   if (menuOpen) {
     const int steps = takeDetents(delta);
     if (steps) {
-      menuSel = ((menuSel + steps) % M_COUNT + M_COUNT) % M_COUNT;
+      if (menuAdjust) {
+        screenRotation = ((screenRotation + steps * ROTATE_STEP_DEG) % 360 + 360) % 360;
+      } else {
+        menuSel = ((menuSel + steps) % M_COUNT + M_COUNT) % M_COUNT;
+      }
       menuInputMs = now;
       play(SND_TICK);
     }
@@ -1035,16 +1060,31 @@ void drawCard(int idx) {
 }
 
 void drawMenu(uint32_t now) {
-  char vol[24];
+  char vol[24], rot[32];
   snprintf(vol, sizeof(vol), "音量: %s", VOLUMES[volumeIdx].label);
-  auto label = [&](int i) { return i == M_VOLUME ? (const char *)vol : MENU_LABELS[i]; };
+  snprintf(rot, sizeof(rot), "画面の向き: %d°", screenRotation);
+  auto label = [&](int i) {
+    return i == M_VOLUME ? (const char *)vol : i == M_ROTATE ? (const char *)rot : MENU_LABELS[i];
+  };
   const int pos = menuSel * 60 / M_COUNT;
   rim([&](int i) { return i == pos ? K_ACCENT : K_TRACK; });
   dotWord("MENU", 50, 90, K_ACCENT, K_TRACK);
   text(label((menuSel + M_COUNT - 1) % M_COUNT), 86, 13, K_SUB);
   text(label(menuSel), 120, 19, K_FG);
   text(label((menuSel + 1) % M_COUNT), 154, 13, K_SUB);
-  text(menuArmed ? "回して選ぶ・押して決定" : "指を離してください", 190, 11, K_SUB);
+  const char *hint = !menuArmed ? "指を離してください"
+                    : menuAdjust ? "回して調整・押して決定"
+                                 : "回して選ぶ・押して決定";
+  text(hint, 190, 11, menuAdjust ? K_ACCENT : K_SUB);
+}
+
+// 画面の向きに合わせて回して出す（0度ならそのまま）
+void present() {
+  if (screenRotation == 0) {
+    canvas.pushSprite(0, 0);
+  } else {
+    canvas.pushRotateZoom(&M5Dial.Display, CX, CY, (float)screenRotation, 1.0f, 1.0f);
+  }
 }
 
 void draw(uint32_t now) {
@@ -1057,13 +1097,13 @@ void draw(uint32_t now) {
   if (!hasConfig) {
     text("設定がありません", 110, 19, K_FG);
     text("include/secrets.h", 140, 12, K_SUB);
-    canvas.pushSprite(0, 0);
+    present();
     return;
   }
 
   if (menuOpen) {
     drawMenu(now);
-    canvas.pushSprite(0, 0);
+    present();
     return;
   }
 
@@ -1209,7 +1249,7 @@ void draw(uint32_t now) {
     }
   }
 
-  canvas.pushSprite(0, 0);
+  present();
 }
 
 }  // namespace
@@ -1222,6 +1262,7 @@ void setup() {
   prefs.begin("callbtn", false);
   volumeIdx = prefs.getUChar("vol", 1) % VOLUME_COUNT;
   M5Dial.Speaker.setVolume(VOLUMES[volumeIdx].value);
+  screenRotation = prefs.getUShort("rot", 0) % 360;
 
   canvas.setColorDepth(16);
   canvas.createSprite(240, 240);
