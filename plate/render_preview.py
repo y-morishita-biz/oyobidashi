@@ -19,7 +19,7 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import make_plate as mp  # noqa: E402
 from build123d import Pos  # noqa: E402
 
-# 造形の色（手持ちのブランドカラー。正確な色は Bambu Studio で割り当てる）
+# 造形の色（手持ちのブランドカラー。正確な色はスライサーで割り当てる）
 YELLOW = "#F7C600"
 BLACK = "#1C1C1C"
 GRAY = "#8E9094"

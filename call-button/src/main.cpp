@@ -46,7 +46,10 @@ namespace {
 constexpr const char *NTFY_HOST = "ntfy.sh";
 constexpr const char *NTFY_URL = "https://ntfy.sh/";
 constexpr const char *REPLY_SUFFIX = "-reply";  // 返事用のトピック = NTFY_TOPIC + これ
-constexpr const char *QR_URL = "https://x.com/penomo";
+// 待たせているときに画面に出す QR コード。自分の SNS やサイトの URL に書き換える
+constexpr const char *QR_URL = "https://example.com/";
+constexpr const char *QR_CAPTION = "詳しく見てみる";  // QR の下の一言（日本語を変えたらフォントを作り直す）
+constexpr const char *QR_LABEL = "example.com";      // その下の小さな文字（英数字ならフォントの作り直しは不要）
 
 constexpr const char *CALL_TITLE = "ブースで呼ばれています";
 constexpr const char *CALL_MESSAGE = "話を聞きたい人がいます！";  // 後ろに押された時刻 (10:42) を付ける
@@ -68,18 +71,18 @@ constexpr Action ACTIONS[] = {
 };
 
 // 待っている間にダイヤルで見られる製品カード
-// 一言説明は製品名からの推測（2026-10-07 陽介さんに確認中）
-constexpr const char *STORE_URL = "https://dotting-dots.stores.jp/";
+// サンプルなので、自分の製品・ショップ・SNS に書き換える（カードの数は増減してよい）
+constexpr const char *STORE_URL = "https://example.com/";
 struct Card {
   const char *name;
   const char *desc;
   const char *url;
 };
 constexpr Card CARDS[] = {
-    {"dotmatrix40 Wireless", "ワイヤレスの自作キーボード", STORE_URL},
-    {"dotpad20", "20キーのコンパクトなキーパッド", STORE_URL},
-    {"AIR CONE", "アナログメーターの CO2 モニター", STORE_URL},
-    {"dotting dots", "新作や制作の様子を発信中", "https://x.com/dotting_dots_x"},
+    {"Product A", "Short description", STORE_URL},
+    {"Product B", "Short description", STORE_URL},
+    {"Product C", "Short description", STORE_URL},
+    {"Follow us", "新作や制作の様子を発信中", "https://example.com/"},
 };
 constexpr int CARD_COUNT = sizeof(CARDS) / sizeof(CARDS[0]);
 
@@ -1153,7 +1156,7 @@ void draw(uint32_t now) {
         } else {
           text("まもなく戻ります", 54, 15, K_PAPER_FG);
           drawQr(QR_URL, 118, 78);
-          text("ツイートを見てみる", 176, 12, K_PAPER_SUB);
+          text(QR_CAPTION, 176, 12, K_PAPER_SUB);
           text(showToast ? toastBuf : buf, 196, 11, showToast ? K_ACCENT : K_PAPER_SUB);
         }
         break;
@@ -1184,9 +1187,9 @@ void draw(uint32_t now) {
           text(buf, 92, 15, K_PAPER_FG);
         }
         drawQr(QR_URL, 140, 70);
-        text(showToast ? toastBuf : "ツイートを見てみる", 190, 12,
+        text(showToast ? toastBuf : QR_CAPTION, 190, 12,
              showToast ? K_ACCENT : K_PAPER_SUB);
-        text("@penomo on X", 208, 10, K_PAPER_SUB);
+        text(QR_LABEL, 208, 10, K_PAPER_SUB);
         break;
       }
       case State::Sorry:
@@ -1194,8 +1197,8 @@ void draw(uint32_t now) {
         rim([&](int) { return K_PAPER_TRACK; });
         text("お待たせしています", 54, 15, K_PAPER_FG);
         drawQr(QR_URL, 118, 78);
-        text("ツイートを見てみる", 176, 12, K_PAPER_SUB);
-        text("@penomo on X", 196, 11, K_PAPER_SUB);
+        text(QR_CAPTION, 176, 12, K_PAPER_SUB);
+        text(QR_LABEL, 196, 11, K_PAPER_SUB);
         break;
       case State::Failed: {
         canvas.fillCircle(CX, CY, 120, c565(K_ACCENT));

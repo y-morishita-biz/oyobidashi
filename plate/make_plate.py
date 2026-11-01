@@ -6,7 +6,7 @@
 #
 # 出力（plate/out/）
 #   plate_base.stl     プレートの地（1色目）。表を上にして造形する
-#   plate_raised.stl   盛り上げた文字・装飾（2色目）。Bambu Studio で plate_base と一緒に
+#   plate_raised.stl   盛り上げた文字・装飾（2色目）。スライサーで plate_base と一緒に
 #                      「1つのオブジェクトの複数パーツ」として読み込み、色を割り当てる
 #   frame_left.stl     プレートを地面から 20° に支える左の側板（外側の面を下にして造形）
 #   frame_right.stl    右の側板
