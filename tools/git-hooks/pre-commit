@@ -1,0 +1,3 @@
+#!/usr/bin/env bash
+# git config core.hooksPath tools/git-hooks で有効になる。
+exec "$(git rev-parse --show-toplevel)/tools/check_secrets.sh" --staged

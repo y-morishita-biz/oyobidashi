@@ -14,6 +14,9 @@
 
 ## iPhone 側の設定
 
+詳しい手順（Android・集中モード・テザリングの設定を含む）は [docs/setup/](../docs/setup/README.md) にあります。
+
+
 1. App Store で [ntfy](https://apps.apple.com/jp/app/ntfy/id1625396347) を入れる
 2. アプリを開き、右上の「+」からトピックを購読する。トピック名に `secrets.h` の `NTFY_TOPIC` を入れる。「Use another server」はオフのまま(ntfy.sh を使う)
 3. 通知を許可する
