@@ -1,10 +1,10 @@
 # 1. ファームウェアを書き込む
 
-パソコンに開発ツールを入れて、M5Dial に呼び出しボタンのプログラム（`call-button`）を書き込みます。ここでは、無料のエディタ **VS Code** と、その拡張機能 **PlatformIO** を使います。macOS で確認した手順ですが、Windows でもほぼ同じです。
+パソコンに開発ツールを入れて、M5Dial に呼び出しボタンのプログラム（`call-button`）を書き込みます。ここでは、無料のエディタ **VS Code** と、その拡張機能 **PlatformIO** を使います。Windows と macOS のどちらでも同じ流れで進められます。違うところはそれぞれ書き分けています。
 
 ## 用意するもの
 
-- パソコン（macOS / Windows）
+- パソコン（Windows 10 / 11 または macOS）
 - M5Dial と、パソコンにつなぐ USB-C ケーブル（**データ通信ができるもの**。充電専用ケーブルだと認識されません）
 - ブース用スマホのテザリングの名前（SSID）とパスワード。まだ決めていなければ、先に [テザリング設定](tethering.md) を済ませてください
 
@@ -29,11 +29,17 @@ ntfy のトピック名は、通知を受け取るための合言葉です。**�
 
 作り方の例：
 
-- **macOS のターミナル**で次を実行し、出てきた文字列をそのまま使う
+- **Windows**：スタートメニューから「PowerShell」を開いて次を実行し、出てきた文字列をそのまま使う
+  ```powershell
+  "oyobidashi-" + [guid]::NewGuid().ToString("N").Substring(0,16)
+  ```
+- **macOS**：「ターミナル」を開いて次を実行し、出てきた文字列をそのまま使う
   ```sh
   echo "oyobidashi-$(openssl rand -hex 8)"
   ```
-- **パスワードマネージャー**（1Password、iCloud キーチェーンなど）で、英数字16文字以上のパスワードを作り、頭に `oyobidashi-` を付ける
+- **パスワードマネージャー**（Google パスワードマネージャー、iCloud キーチェーン、1Password など）で英数字16文字以上のパスワードを作り、頭に `oyobidashi-` を付ける
+
+記号は使わず、半角の英数字とハイフンだけにしてください。トピック名を作る Web サイトは使わないでください（作った文字列をサイト側に知られてしまうためです）。
 
 決めたトピック名は、あとで ntfy アプリにも入れます。パスワードマネージャーに保存しておくと楽です。
 
@@ -67,6 +73,7 @@ Wi-Fi のパスワードとトピック名は、`secrets.h` というファイ�
 
 - `Failed to connect` と出たら、もう一度 → を押す（1回目だけ失敗することがあります）
 - 何度やってもつながらないときは、ケーブルを替えてみる（充電専用ケーブルのことが多いです）
+- Windows で M5Dial が見つからないときは、デバイスマネージャーの「ポート（COM と LPT）」に M5Dial をつないだときだけ増える項目があるかを確かめる
 - それでもだめなら、[M5Dial の公式ドキュメント](https://docs.m5stack.com/ja/core/M5Dial) で書き込みモード（ダウンロードモード）での起動のしかたを確認する
 
 ## 6. 動いているか確かめる
@@ -87,11 +94,11 @@ Wi-Fi のパスワードとトピック名は、`secrets.h` というファイ�
 [net] published "ブースで呼ばれています" in 2500 ms   ← 通知を送れた
 ```
 
-ログにトピック名やパスワードは出ないので、人に見せても大丈夫です。止めるときはターミナルで `Ctrl + C` を押します。
+ログにトピック名やパスワードは出ないので、人に見せても大丈夫です。止めるときは、ターミナルの右上のゴミ箱のアイコンで閉じます。
 
 ## 自分用に変える
 
-`call-button/src/main.cpp` の先頭に、変えやすい設定がまとまっています。初期値は作者のブース用（X の @penomo、dotting dots のショップ）なので、自分のものに書き換えてから書き込んでください。
+`call-button/src/main.cpp` の先頭に、変えやすい設定がまとまっています。初期値には作者のブース用のサンプル（X アカウントやショップの URL、製品名）が入っています。自分のものに書き換えてから書き込んでください。画面に出る「制作者」という呼び方も、ここで変えられます（変えたらフォントの作り直しが必要です）。
 
 | 定数 | 内容 |
 |---|---|
@@ -106,20 +113,32 @@ Wi-Fi のパスワードとトピック名は、`secrets.h` というファイ�
 
 画面の日本語は、使う文字だけを Noto Sans JP から取り出したフォント（`src/fonts_noto.h`）で描いています。新しい文字を使うと画面に表示されないので、フォントを作り直してください。
 
-1. [Google Fonts の Noto Sans JP](https://fonts.google.com/noto/specimen/Noto+Sans+JP) をダウンロードし、Bold と Regular をパソコンにインストールする
-2. VS Code のステータスバーの **ターミナルのアイコン（PlatformIO: New Terminal）** を押す
-3. 開いたターミナルで次を実行する（macOS の場合。フォントの場所は自分の環境に合わせる）
+少し手間がかかるので、文言を変えないなら飛ばしてかまいません。
+
+1. [Google Fonts の Noto Sans JP](https://fonts.google.com/noto/specimen/Noto+Sans+JP) をダウンロードして展開する。中の `static` フォルダに `NotoSansJP-Bold.ttf` と `NotoSansJP-Regular.ttf` があります（見つからないときは、ファイル名に Bold と Regular が付いたものを使い、下のコマンドのファイル名をそれに合わせる）
+2. その2つのファイルを、リポジトリの `call-button` フォルダにコピーする（ここに置けば、下のコマンドをそのまま使えます。コミットはしないでください）
+3. VS Code のステータスバーの **ターミナルのアイコン（PlatformIO: New Terminal）** を押す
+4. 開いたターミナルで次を実行する
+
+**Windows（PowerShell）**
+
+```powershell
+& "$env:USERPROFILE\.platformio\penv\Scripts\pip.exe" install freetype-py
+& "$env:USERPROFILE\.platformio\penv\Scripts\python.exe" ..\tools\make_vlw.py --src src/main.cpp --out src/fonts_noto.h `
+  --font NOTO_BOLD_20=NotoSansJP-Bold.ttf:20 --font NOTO_BOLD_15=NotoSansJP-Bold.ttf:15 `
+  --font NOTO_REGULAR_13=NotoSansJP-Regular.ttf:13 --font NOTO_REGULAR_11=NotoSansJP-Regular.ttf:11
+```
+
+**macOS**
 
 ```sh
 ~/.platformio/penv/bin/pip install freetype-py
 ~/.platformio/penv/bin/python ../tools/make_vlw.py --src src/main.cpp --out src/fonts_noto.h \
-  --font NOTO_BOLD_20=~/Library/Fonts/NotoSansJP-Bold.otf:20 \
-  --font NOTO_BOLD_15=~/Library/Fonts/NotoSansJP-Bold.otf:15 \
-  --font NOTO_REGULAR_13=~/Library/Fonts/NotoSansJP-Regular.otf:13 \
-  --font NOTO_REGULAR_11=~/Library/Fonts/NotoSansJP-Regular.otf:11
+  --font NOTO_BOLD_20=NotoSansJP-Bold.ttf:20 --font NOTO_BOLD_15=NotoSansJP-Bold.ttf:15 \
+  --font NOTO_REGULAR_13=NotoSansJP-Regular.ttf:13 --font NOTO_REGULAR_11=NotoSansJP-Regular.ttf:11
 ```
 
-4. もう一度 → で書き込む
+5. もう一度 → で書き込む
 
 ## 改造して git で管理する人へ
 
