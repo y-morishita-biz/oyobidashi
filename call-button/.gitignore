@@ -1,3 +1,7 @@
 .pio/
 .vscode/
 include/secrets.h
+
+# フォントを作り直すときに置く Noto Sans JP（再配布しない）
+*.ttf
+*.otf

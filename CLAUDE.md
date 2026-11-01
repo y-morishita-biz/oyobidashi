@@ -14,15 +14,16 @@
 - **無料で構築する**。有料サービスやハードの追加購入が必要になりそうなら、実装する前に相談する
 - 通知は ntfy（ntfy.sh の公開サーバー）。回線はブースに置いた Android のテザリング（2.4GHz）
 - 秘密情報（Wi-Fi の SSID・パスワード、ntfy のトピック名）は各プロジェクトの `include/secrets.h` に書き、コミットしない。`secrets.example.h` を用意する
+- リポジトリは公開する前提。コミットの前に `tools/check_secrets.sh --staged` が通ることを確かめる（SECURITY.md）。ログにトピック名やパスワードを出さない
 
 ## リポジトリ構成
 
 ```
 battery-test/   モバイルバッテリーの自動オフを確かめるテスト用ファームウェア（PlatformIO）
 call-button/    呼び出しボタン本体のファームウェア
-docs/           引き継ぎ資料・UX 仕様（ux-proposal.html）・プレートの設計（plate-design.html）
+docs/           引き継ぎ資料・UX 仕様（ux-proposal.html）・プレートの設計（plate-design.html）・設定手順（setup/）
 plate/          M5Dial を埋め込むプレートの 3D モデル（build123d で STEP / STL を書き出す）
-tools/          開発用スクリプト（シリアルログの読み取りなど）
+tools/          開発用スクリプト（シリアルログの読み取り・秘密情報チェックなど）
 ```
 
 ファームウェアは1つのプロジェクトにつき1フォルダ（それぞれに platformio.ini を置く）。

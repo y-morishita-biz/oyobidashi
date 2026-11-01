@@ -1,2 +1,10 @@
 # macOS が自動で作るファイル
 .DS_Store
+
+# 秘密情報（Wi-Fi のパスワード・ntfy のトピック名）。secrets.example.h をコピーして作る
+secrets.h
+
+# ビルド・エディタ
+.pio/
+.vscode/
+__pycache__/
