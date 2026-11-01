@@ -1,109 +1,97 @@
 # 1. ファームウェアを書き込む
 
-M5Dial に `call-button` を書き込みます。macOS で確認した手順です（Windows / Linux でも PlatformIO が動けば同じ流れです）。
+パソコンに開発ツールを入れて、M5Dial に呼び出しボタンのプログラム（`call-button`）を書き込みます。ここでは、無料のエディタ **VS Code** と、その拡張機能 **PlatformIO** を使います。macOS で確認した手順ですが、Windows でもほぼ同じです。
 
-## 1. PlatformIO を入れる
+## 用意するもの
 
-どちらか一方で大丈夫です。
+- パソコン（macOS / Windows）
+- M5Dial と、パソコンにつなぐ USB-C ケーブル（**データ通信ができるもの**。充電専用ケーブルだと認識されません）
+- ブース用スマホのテザリングの名前（SSID）とパスワード。まだ決めていなければ、先に [テザリング設定](tethering.md) を済ませてください
 
-- **VS Code を使う**：VS Code の拡張機能「PlatformIO IDE」を入れる。以降の `pio` コマンドは、VS Code の PlatformIO のターミナルで実行するか、左のメニューの Build / Upload ボタンで代わりにできます
-- **ターミナルだけで使う**：[PlatformIO Core のインストール手順](https://docs.platformio.org/en/latest/core/installation/index.html)に従う。`pio` が PATH に無いときは `~/.platformio/penv/bin/pio` を使います
+## 1. VS Code と PlatformIO を入れる
 
-## 2. リポジトリを手元に持ってくる
+1. [VS Code](https://code.visualstudio.com/) をダウンロードしてインストールする
+2. VS Code を開き、左の縦に並んだアイコンから **拡張機能**（四角が4つのアイコン）を選ぶ
+3. 検索欄に `PlatformIO IDE` と入れて **インストール** を押す
+4. インストールが終わったら VS Code を再起動する。左にアリの顔のアイコン（PlatformIO）が出れば完了です
 
-```sh
-git clone https://github.com/y-morishita-biz/oyobidashi.git
-cd oyobidashi
-```
+初回は PlatformIO が裏で必要なものをダウンロードするので、数分かかります。
 
-## 3. 秘密情報（secrets.h）を作る
+## 2. リポジトリをダウンロードする
 
-### トピック名を決める
+GitHub のこのリポジトリのページで、緑の **Code** ボタン → **Download ZIP** を押し、好きな場所に展開します。
 
-ntfy のトピック名は合言葉の代わりです。**自分で考えた単語ではなく、ランダムな文字列**にしてください。ターミナルで次を実行すると作れます。
+git を使える人は `git clone https://github.com/y-morishita-biz/oyobidashi.git` でもかまいません。
 
-```sh
-echo "oyobidashi-$(openssl rand -hex 8)"
-# 例: oyobidashi-3f9c0a7b12d4e865（これをそのまま使わないこと）
-```
+## 3. トピック名を決める
 
-### secrets.h を書く
+ntfy のトピック名は、通知を受け取るための合言葉です。**自分で考えた単語ではなく、ランダムな文字列**にしてください。
 
-```sh
-cp call-button/include/secrets.example.h call-button/include/secrets.h
-```
+作り方の例：
 
-`call-button/include/secrets.h` を開いて、3つの値を入れます。
+- **macOS のターミナル**で次を実行し、出てきた文字列をそのまま使う
+  ```sh
+  echo "oyobidashi-$(openssl rand -hex 8)"
+  ```
+- **パスワードマネージャー**（1Password、iCloud キーチェーンなど）で、英数字16文字以上のパスワードを作り、頭に `oyobidashi-` を付ける
+
+決めたトピック名は、あとで ntfy アプリにも入れます。パスワードマネージャーに保存しておくと楽です。
+
+## 4. secrets.h を作る
+
+Wi-Fi のパスワードとトピック名は、`secrets.h` というファイルにだけ書きます。このファイルは git の管理対象外なので、うっかり公開されることはありません。
+
+1. VS Code の **ファイル → フォルダーを開く** で、展開したリポジトリの中の **`call-button`** フォルダを開く
+   - リポジトリ全体ではなく、`call-button` フォルダを開いてください。PlatformIO はこのフォルダの `platformio.ini` を見て動きます
+2. 左のファイル一覧で `include/secrets.example.h` を右クリック → **コピー**、`include` フォルダを右クリック → **貼り付け**
+3. できたコピーを右クリック → **名前の変更** で `secrets.h` にする
+4. `secrets.h` を開き、3か所の `"..."` の中を自分の値に書き換えて保存する
 
 ```c
-#define WIFI_SSID "your-tethering-ssid"          // ← ブース用スマホのテザリング名
+#define WIFI_SSID "your-tethering-ssid"          // ← ブース用スマホのテザリングの名前
 #define WIFI_PASS "your-password"                // ← テザリングのパスワード
-#define NTFY_TOPIC "oyobidashi-xxxxxxxxxxxxxxxx" // ← 上で作ったトピック名
+#define NTFY_TOPIC "oyobidashi-xxxxxxxxxxxxxxxx" // ← 3. で決めたトピック名
 ```
 
-- SSID とパスワードは、次の [テザリング設定](tethering.md) で決めるものと同じにします。先にテザリング側を決めてもかまいません
-- 返事のやり取りには、`NTFY_TOPIC` の後ろに `-reply` を付けたトピックを自動で使います。設定は要りません
-- `secrets.h` は `.gitignore` に入っているので、普通に `git add .` してもコミットされません。`git status` に `secrets.h` が出てこないことを確認してください
+- 大文字・小文字も含めて、テザリングの設定と完全に同じにしてください
+- 返事のやり取りには、トピック名の後ろに `-reply` を付けたトピックを自動で使います。こちらは何もしなくて大丈夫です
 
-## 4. うっかりコミットを防ぐ（任意）
+## 5. M5Dial に書き込む
 
-このリポジトリには、`secrets.h` や本物のパスワードらしき文字列をコミットしようとしたときに止める pre-commit フックが入っています。一度だけ次を実行すると有効になります。
+1. M5Dial を USB-C ケーブルでパソコンにつなぐ
+2. VS Code のいちばん下の青い帯（ステータスバー）にある **→（Upload）** を押す
+   - 初回はライブラリのダウンロードとビルドで数分かかります
+3. 下のターミナルに `SUCCESS` と出れば書き込み完了です。M5Dial が再起動して、オレンジの「TAP」の画面が出ます
 
-```sh
-git config core.hooksPath tools/git-hooks
-```
+うまくいかないとき：
 
-## 5. ビルドして書き込む
-
-M5Dial を USB-C でパソコンにつないでから実行します。
-
-```sh
-cd call-button
-pio run -t upload
-```
-
-- 1回目に「Failed to connect」と出ることがあります。もう一度実行すると通ることが多いです
-- それでもつながらないときは `pio device list` で M5Dial が見えているか確かめてください
+- `Failed to connect` と出たら、もう一度 → を押す（1回目だけ失敗することがあります）
+- 何度やってもつながらないときは、ケーブルを替えてみる（充電専用ケーブルのことが多いです）
+- それでもだめなら、[M5Dial の公式ドキュメント](https://docs.m5stack.com/ja/core/M5Dial) で書き込みモード（ダウンロードモード）での起動のしかたを確認する
 
 ## 6. 動いているか確かめる
 
-シリアルログを読むと、Wi-Fi につながったか・通知を送れたかが分かります。
+この時点で、ブース用スマホのテザリングをオンにしておいてください。
 
-```sh
-# pyserial が必要（PlatformIO の Python には入っています）
-~/.platformio/penv/bin/python ../tools/serial_log.py 30 --reset
+1. M5Dial の画面の一番下に小さな点が出ていなければ、Wi-Fi につながっています（点が出ているあいだは接続中か、つながっていない状態です）
+2. 画面に触れると「呼び出しています」→「制作者に届きました」と変わる
+3. ntfy アプリの設定（[receiver-ntfy.md](receiver-ntfy.md)）が済んでいれば、持ち歩くスマホに通知が届く
+
+### ログを見たいとき
+
+つながらない原因を調べたいときは、ステータスバーの **コンセントのアイコン（Serial Monitor）** を押すと、M5Dial のログが流れます。
+
+```
+[call] wifi connected, ip 192.168.x.x, rssi -40   ← Wi-Fi につながった
+[net] listening (since ...)                         ← 返事を待ち受け中
+[net] published "ブースで呼ばれています" in 2500 ms   ← 通知を送れた
 ```
 
-次のような行が出れば成功です。
+ログにトピック名やパスワードは出ないので、人に見せても大丈夫です。止めるときはターミナルで `Ctrl + C` を押します。
 
-```
-[call] wifi connected, ip 192.168.x.x, rssi -40
-[net] listening (since ...)
-```
+## 自分用に変える
 
-画面に触れて `[net] published "ブースで呼ばれています"` と出れば、通知が送れています。ntfy アプリ側の設定は [receiver-ntfy.md](receiver-ntfy.md) を見てください。
-
-> ログにトピック名やパスワードは出しません。ログを人に見せても大丈夫です。
-
-## 画面の文言を変えたとき
-
-画面の日本語は、使う文字だけを Noto Sans JP から取り出したフォント（`src/fonts_noto.h`）で描いています。`src/main.cpp` の文言を変えて新しい文字が増えたら、フォントを作り直してください。
-
-1. [Google Fonts の Noto Sans JP](https://fonts.google.com/noto/specimen/Noto+Sans+JP) をダウンロードし、Bold と Regular を入れる
-2. `freetype-py` を入れる：`~/.platformio/penv/bin/pip install freetype-py`
-3. `call-button` フォルダで実行する（フォントのパスは自分の環境に合わせる）
-
-```sh
-~/.platformio/penv/bin/python ../tools/make_vlw.py --src src/main.cpp --out src/fonts_noto.h \
-  --font NOTO_BOLD_20=~/Library/Fonts/NotoSansJP-Bold.otf:20 \
-  --font NOTO_BOLD_15=~/Library/Fonts/NotoSansJP-Bold.otf:15 \
-  --font NOTO_REGULAR_13=~/Library/Fonts/NotoSansJP-Regular.otf:13 \
-  --font NOTO_REGULAR_11=~/Library/Fonts/NotoSansJP-Regular.otf:11
-```
-
-## 自分用に変えるところ
-
-`call-button/src/main.cpp` の先頭にまとまっています。
+`call-button/src/main.cpp` の先頭に、変えやすい設定がまとまっています。初期値は作者のブース用（X の @penomo、dotting dots のショップ）なので、自分のものに書き換えてから書き込んでください。
 
 | 定数 | 内容 |
 |---|---|
@@ -111,11 +99,36 @@ pio run -t upload
 | `ACTIONS` | 通知に付く返事のボタン（最大3つ） |
 | `CARDS` / `STORE_URL` | 待っている間にダイヤルで見られる製品カード |
 | `QR_URL` | 待たせているときに画面に出す QR コードの行き先 |
-| `QR_AFTER_MS` などのタイミング | QR を出すまで・再通知・お待たせまでの時間 |
+| `QR_AFTER_MS` など | QR を出すまで・再通知・お待たせまでの時間（ミリ秒） |
 | `TZ_JST` / `NTP_SERVER1` | 時刻のタイムゾーンと NTP サーバー |
 
-初期値は作者のブース用（X の @penomo、dotting dots のショップ）なので、自分のものに書き換えてください。
+## 画面の文言を変えたとき
+
+画面の日本語は、使う文字だけを Noto Sans JP から取り出したフォント（`src/fonts_noto.h`）で描いています。新しい文字を使うと画面に表示されないので、フォントを作り直してください。
+
+1. [Google Fonts の Noto Sans JP](https://fonts.google.com/noto/specimen/Noto+Sans+JP) をダウンロードし、Bold と Regular をパソコンにインストールする
+2. VS Code のステータスバーの **ターミナルのアイコン（PlatformIO: New Terminal）** を押す
+3. 開いたターミナルで次を実行する（macOS の場合。フォントの場所は自分の環境に合わせる）
+
+```sh
+~/.platformio/penv/bin/pip install freetype-py
+~/.platformio/penv/bin/python ../tools/make_vlw.py --src src/main.cpp --out src/fonts_noto.h \
+  --font NOTO_BOLD_20=~/Library/Fonts/NotoSansJP-Bold.otf:20 \
+  --font NOTO_BOLD_15=~/Library/Fonts/NotoSansJP-Bold.otf:15 \
+  --font NOTO_REGULAR_13=~/Library/Fonts/NotoSansJP-Regular.otf:13 \
+  --font NOTO_REGULAR_11=~/Library/Fonts/NotoSansJP-Regular.otf:11
+```
+
+4. もう一度 → で書き込む
+
+## 改造して git で管理する人へ
+
+`secrets.h` をうっかりコミットしないように、コミット前に止めてくれるフックが入っています。リポジトリのフォルダで一度だけ次を実行すると有効になります。
+
+```sh
+git config core.hooksPath tools/git-hooks
+```
 
 ## battery-test について
 
-`battery-test/` は、モバイルバッテリーが「電流が小さい」と判断して勝手に出力を止めないかを確かめるためのテスト用ファームウェアです。手持ちのバッテリーで不安があるときに使ってください。手順は [battery-test/README.md](../../battery-test/README.md) にあります。
+`battery-test/` は、モバイルバッテリーが「電流が小さい」と判断して勝手に出力を止めないかを確かめるためのテスト用プログラムです。手持ちのバッテリーで不安があるときに、同じ手順（`battery-test` フォルダを開いて → で書き込み）で使えます。詳しくは [battery-test/README.md](../../battery-test/README.md) を見てください。

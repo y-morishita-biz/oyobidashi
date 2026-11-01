@@ -1,23 +1,58 @@
 # 設定ガイド
 
-oyobidashi を自分のブースで使うまでの手順です。上から順に進めれば動きます。
+oyobidashi を自分のブースで使えるようにする手順です。パソコンとスマホ2台、M5Dial を手元に用意して、上から順に進めてください。
 
 | # | 手順 | かかる時間の目安 |
 |---|---|---|
-| 1 | [ファームウェアを書き込む](firmware.md) | 30分（PlatformIO の初回インストール込み） |
+| 1 | [ファームウェアを書き込む](firmware.md) | 30分（初めて PlatformIO を入れる場合） |
 | 2 | [ブースに置くスマホのテザリング設定](tethering.md) | 5分 |
 | 3 | [通知を受け取るスマホの設定（ntfy アプリ）](receiver-ntfy.md) | 5分 |
 | 4 | [当日のチェックリスト](event-checklist.md) | 会場で5分 |
 
-## 3台の役割
+## 登場する機材と役割
 
-```
-[M5Dial]  ←Wi-Fi→  [ブース用スマホ（テザリング）]        [持ち歩くスマホ（ntfy アプリ）]
- 来場者が触れる       M5Dial のネット回線                  通知を受け取り、返事をする
+```mermaid
+flowchart LR
+    subgraph booth["ブース"]
+        D["M5Dial<br>来場者が触れる"]
+        T["ブース用スマホ<br>テザリング"]
+        B["モバイルバッテリー"]
+    end
+    subgraph you["あなた（ブースの外）"]
+        P["持ち歩くスマホ<br>ntfy アプリ"]
+    end
+    N[("ntfy.sh")]
+
+    B -. "USB 給電" .-> D
+    B -. "USB 給電" .-> T
+    D <-- "Wi-Fi 2.4GHz" --> T
+    T <-- "モバイル回線" --> N
+    N <-- "通知と返事" --> P
 ```
 
 - **ブース用スマホ**と**持ち歩くスマホ**は別の端末にしてください。持ち歩くスマホでテザリングすると、ブースを離れた瞬間に M5Dial の回線が切れます。
 - 3台をつなぐ「合言葉」が **ntfy のトピック名**です。M5Dial（`secrets.h`）と ntfy アプリの両方に同じ名前を入れます。トピック名を知っている人は誰でも通知を読んだり送ったりできるので、推測されにくい文字列にして、人に見せないでください（[SECURITY.md](../../SECURITY.md)）。
+
+## 呼び出しから返事までの流れ
+
+```mermaid
+sequenceDiagram
+    actor V as 来場者
+    participant D as M5Dial
+    participant N as ntfy.sh
+    actor P as あなた（持ち歩くスマホ）
+
+    V->>D: 画面に触れる
+    D-->>V: 音と波紋「呼び出しています」
+    D->>N: 通知を送る（トピック）
+    N->>P: プッシュ通知「ブースで呼ばれています」
+    D-->>V: 「制作者に届きました」
+    P->>N: 通知を長押しして「向かいます」
+    N->>D: 返事（トピック-reply）
+    D-->>V: 「制作者が向かっています」
+```
+
+返事がないまま時間がたつと、M5Dial は1分で QR コードを出し、2分で再通知し、5分で「お待たせしています」に切り替えます。
 
 ## 秘密情報の置き場所
 
@@ -26,5 +61,3 @@ oyobidashi を自分のブースで使うまでの手順です。上から順に
 | テザリングの SSID・パスワード | `call-button/include/secrets.h` | 入らない（`.gitignore` 済み） |
 | ntfy のトピック名 | `call-button/include/secrets.h` と ntfy アプリ | 入らない |
 | それ以外（文言・時間・色など） | `call-button/src/main.cpp` | 入る |
-
-`secrets.h` をうっかりコミットしないように、[firmware.md](firmware.md#4-うっかりコミットを防ぐ任意) の pre-commit フックも入れておくと安心です。
