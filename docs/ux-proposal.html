@@ -247,7 +247,7 @@ td.t { font-family: var(--f-mono); white-space: nowrap; font-variant-numeric: ta
     <ul class="principles">
       <li><div class="who"><span class="chip">K</span><span class="chip">S</span><span class="chip">L</span></div><h3>触れた瞬間に応える</h3><p>通信には約2.5秒かかる。その前に0.1秒で音と波紋を返して「触れた」を伝える</p></li>
       <li><div class="who"><span class="chip">K</span><span class="chip">M</span><span class="chip y">Y</span></div><h3>「届いた」と「来る」を分けて見せる</h3><p>届いただけでは、制作者が気づいたかは分からない。返事を受けたときだけ「向かっています」「ごろ戻ります」を出す</p></li>
-      <li><div class="who"><span class="chip">M</span><span class="chip">K</span></div><h3>待つ時間に、目安と楽しみを</h3><p>待った時間と戻りの時刻を見せる。QR の画面は白地にして切り替わりを伝え、ツイートや製品カードで待つ時間を楽しくする</p></li>
+      <li><div class="who"><span class="chip">M</span><span class="chip">K</span></div><h3>待つ時間に、目安と楽しみを</h3><p>待った時間と戻りの時刻を見せる。QR の画面は白地にして切り替わりを伝え、SNS の QR や製品カードで待つ時間を楽しくする</p></li>
       <li><div class="who"><span class="chip">K</span><span class="chip">L</span></div><h3>失敗を来場者に背負わせない</h3><p>送れなかったら裏で最大3回やり直す。もう一度触ってもらうのは、全部失敗したときだけ</p></li>
       <li><div class="who"><span class="chip">L</span><span class="chip">S</span></div><h3>言葉より先に、形で伝える</h3><p>オレンジ = 触れる番、黒 = 待つ番、白 = 見て楽しむ番。回せる画面には時計回りの矢印</p></li>
       <li><div class="who"><span class="chip y">Y</span></div><h3>制作者の手間はボタン1つ</h3><p>通知のボタンがそのまま返事になる。通知を読むためのタップでは返事にしない。戻ったら3秒長押し</p></li>
@@ -267,7 +267,7 @@ td.t { font-family: var(--f-mono); white-space: nowrap; font-variant-numeric: ta
           <tr><td class="t">0.1s</td><td>触れる</td><td>「ピッ」。オレンジの丸が沈み込み、波紋が広がる</td><td>−</td><td>触れた</td></tr>
           <tr><td class="t">0–2.5s</td><td>呼び出し中</td><td>CALLING。外周のドットが回る</td><td>−</td><td>動いている</td></tr>
           <tr><td class="t">2.5s</td><td>届いた</td><td>「ピロン」。SENT「制作者に届きました」。外周のドットが1秒ずつ灯る。左右に回す矢印</td><td>🔔 ブースで呼ばれています</td><td>届いた。時間は進んでいる</td></tr>
-          <tr><td class="t">1min</td><td>待つ</td><td>白地に変わり、X の QR と「ツイートを見てみる」。回すと製品カード</td><td>−</td><td>待つ間も楽しい</td></tr>
+          <tr><td class="t">1min</td><td>待つ</td><td>白地に変わり、QR と「詳しく見てみる」。回すと製品カード</td><td>−</td><td>待つ間も楽しい</td></tr>
           <tr><td class="t">2min</td><td>返事がない</td><td>画面はそのまま</td><td>🔔 まだお待ちです (再通知)</td><td>(制作者) 見逃しても、もう一度知らせてくれる</td></tr>
           <tr><td class="t">任意</td><td>返事が来る</td><td>「ピンポーン」。COMING「制作者が向かっています」、または白地に大きな時刻「12:15 ごろ戻ります」</td><td>通知のボタンで返事</td><td>来るなら待とう / 後で来よう</td></tr>
           <tr><td class="t">5min</td><td>区切る</td><td>白地に「お待たせしています」と QR。2分後に待機へ</td><td>来場者に連絡先を案内しました</td><td>放っておかれていない</td></tr>
@@ -340,7 +340,7 @@ td.t { font-family: var(--f-mono); white-space: nowrap; font-variant-numeric: ta
         <thead><tr><th>いつ</th><th>操作</th><th>起きること</th><th>誰のため</th></tr></thead>
         <tbody>
           <tr><td>待機・在席</td><td>回す</td><td>外周の光がダイヤルの位置についてくる (1.5秒で消える)。通知は送らない</td><td><span class="chip">S</span> <span class="chip">L</span></td></tr>
-          <tr><td>届いた・向かっています・戻り時刻・お待たせ</td><td>回す</td><td>製品カードがめくれる (dotmatrix40 Wireless / dotpad20 / AIR CONE / dotting dots)。8秒触らないと元の画面へ。左右の縁の時計回りの矢印が、2.4秒ごとに少し動いて「回せる」を伝える</td><td><span class="chip">K</span> <span class="chip">M</span></td></tr>
+          <tr><td>届いた・向かっています・戻り時刻・お待たせ</td><td>回す</td><td>製品カードがめくれる (Product A / Product B / Product C / Follow us などのサンプル)。8秒触らないと元の画面へ。左右の縁の時計回りの矢印が、2.4秒ごとに少し動いて「回せる」を伝える</td><td><span class="chip">K</span> <span class="chip">M</span></td></tr>
           <tr><td>いつでも</td><td>画面に触れたまま1段回す → 離す</td><td>担当者メニュー。回して選び、触れて決定。閉じる / 在席にする / 離席にする / 15・30・60分で戻る / 音量 (大・中・小・なし)。開いた直後は「閉じる」、10秒で自動で閉じる</td><td><span class="chip y">Y</span></td></tr>
         </tbody>
       </table>
@@ -398,7 +398,7 @@ td.t { font-family: var(--f-mono); white-space: nowrap; font-variant-numeric: ta
           <tr><td>区切り</td><td>10分</td><td>5分 (再通知は2分の1回)</td><td>10分は来場者には長い</td></tr>
           <tr><td>返事の方法</td><td>通知のタップ</td><td>通知のボタン3つ。タップは返事にしない</td><td>通知を読むためのタップで「向かいます」になってしまった。iPhone でもボタンが使えると確認できた</td></tr>
           <tr><td>戻りの表示</td><td>−</td><td>「12:15 ごろ戻ります」(時刻)</td><td>「30分後」だと、あとから来た人には意味がずれる</td></tr>
-          <tr><td>QR の位置づけ</td><td>お急ぎの方はこちら</td><td>ツイートを見てみる (x.com/penomo)</td><td>急かすより、待つ間に活動を見てもらう</td></tr>
+          <tr><td>QR の位置づけ</td><td>お急ぎの方はこちら</td><td>詳しく見てみる (自分の SNS やサイト)</td><td>急かすより、待つ間に活動を見てもらう</td></tr>
           <tr><td>QR の画面の色</td><td>黒地</td><td>白地</td><td>画面が「変わった」ことが伝わる</td></tr>
           <tr><td>呼びかけ</td><td>PUSH / 押して担当者を呼ぶ</td><td>TAP / 制作者と話してみたい！</td><td>画面の押し込みは重い。「担当者を呼ぶ」は心理的に呼びづらい</td></tr>
           <tr><td>在席の切り替え</td><td>NFC カード案あり</td><td>担当者メニュー (触れたまま回す)</td><td>無料方針。カードは付属せず、Suica は読めない</td></tr>
@@ -413,7 +413,7 @@ td.t { font-family: var(--f-mono); white-space: nowrap; font-variant-numeric: ta
 <section class="sec" id="install">
   <div class="sec-label">10<b>設置</b>next</div>
   <div class="sec-body">
-    <p>次のステップは、M5Dial を固定して埋め込むプレート (Bambu Lab A1 mini で多色造形) です。画面とダイヤルの操作から決まる条件をまとめておきます。</p>
+    <p>次のステップは、M5Dial を固定して埋め込むプレート (3D プリンターで多色造形) です。画面とダイヤルの操作から決まる条件をまとめておきます。</p>
     <ul class="specs">
       <li><b>タッチ</b><span>指が画面のガラスに直接触れないと反応しない。アクリルなどで覆わない</span></li>
       <li><b>押し込み</b><span>画面の押し込みも残す。縁で画面を押さえず、前面を少し出す</span></li>
@@ -437,7 +437,7 @@ td.t { font-family: var(--f-mono); white-space: nowrap; font-variant-numeric: ta
   };
   const JP = '"Noto Sans JP", "Hiragino Sans", sans-serif';
   const RM = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-  const QR_X = 'https://x.com/penomo';
+  const QR_X = 'https://example.com/';
 
   // ---- 5x7 ドットフォント（実機と同じデータ） ----
   const G = {
@@ -451,10 +451,10 @@ td.t { font-family: var(--f-mono); white-space: nowrap; font-variant-numeric: ta
     8: [14, 17, 17, 14, 17, 17, 14], 9: [14, 17, 17, 15, 1, 2, 12], ':': [0, 4, 4, 0, 4, 4, 0],
   };
   const CARDS = [
-    { name: 'dotmatrix40 Wireless', desc: 'ワイヤレスの自作キーボード' },
-    { name: 'dotpad20', desc: '20キーのコンパクトなキーパッド' },
-    { name: 'AIR CONE', desc: 'アナログメーターの CO2 モニター' },
-    { name: 'dotting dots', desc: '新作や制作の様子を発信中' },
+    { name: 'Product A', desc: 'Short description' },
+    { name: 'Product B', desc: 'Short description' },
+    { name: 'Product C', desc: 'Short description' },
+    { name: 'Follow us', desc: '新作や制作の様子を発信中' },
   ];
   const MENU = ['閉じる', '在席にする', '離席にする', '15分で戻る', '30分で戻る', '60分で戻る', 'VOL'];
   const VOLS = ['大', '中', '小', 'なし'];
@@ -604,7 +604,7 @@ td.t { font-family: var(--f-mono); white-space: nowrap; font-variant-numeric: ta
           } else {
             text(ctx, 'まもなく戻ります', 54, 15, D.pfg);
             qr(ctx, 118, 78);
-            text(ctx, 'ツイートを見てみる', 176, 12, D.psub);
+            text(ctx, '詳しく見てみる', 176, 12, D.psub);
             text(ctx, toast || `お待ち ${mmss(v.el)}`, 196, 11, toast ? D.accent : D.psub);
           }
           break;
@@ -626,8 +626,8 @@ td.t { font-family: var(--f-mono); white-space: nowrap; font-variant-numeric: ta
           dotWord(ctx, v.awayAt, 58, 140, D.accent, D.ptrack);
           text(ctx, 'ごろ戻ります', 92, 15, D.pfg);
           qr(ctx, 140, 70);
-          text(ctx, toast || 'ツイートを見てみる', 190, 12, toast ? D.accent : D.psub);
-          text(ctx, '@penomo on X', 208, 10, D.psub);
+          text(ctx, toast || '詳しく見てみる', 190, 12, toast ? D.accent : D.psub);
+          text(ctx, 'example.com', 208, 10, D.psub);
           break;
         }
         case 'sorry': {
@@ -636,8 +636,8 @@ td.t { font-family: var(--f-mono); white-space: nowrap; font-variant-numeric: ta
           rim(ctx, () => [D.ptrack, 1]);
           text(ctx, 'お待たせしています', 54, 15, D.pfg);
           qr(ctx, 118, 78);
-          text(ctx, 'ツイートを見てみる', 176, 12, D.psub);
-          text(ctx, '@penomo on X', 196, 11, D.psub);
+          text(ctx, '詳しく見てみる', 176, 12, D.psub);
+          text(ctx, 'example.com', 196, 11, D.psub);
           break;
         }
         case 'failed': {
@@ -855,13 +855,13 @@ td.t { font-family: var(--f-mono); white-space: nowrap; font-variant-numeric: ta
     { v: { mode: 'idle' }, name: '待機', id: 'idle', when: '起動時、各状態の終わり', snd: '−', copy: '制作者と話してみたい！ / Talk to the maker' },
     { v: { mode: 'calling' }, name: '呼び出し中', id: 'calling', when: '触れた直後〜送れるまで', snd: 'ピッ', copy: '呼び出しています' },
     { v: { mode: 'sent', el: 42 }, name: '届いた', id: 'sent', when: '送れた〜1分', snd: 'ピロン', copy: '制作者に届きました / まもなく戻ります' },
-    { v: { mode: 'sent', el: 83 }, name: '届いた (1分後)', id: 'sent+qr', when: '1分〜5分', snd: '−', copy: 'まもなく戻ります / ツイートを見てみる' },
+    { v: { mode: 'sent', el: 83 }, name: '届いた (1分後)', id: 'sent+qr', when: '1分〜5分', snd: '−', copy: 'まもなく戻ります / 詳しく見てみる' },
     { v: { mode: 'coming' }, name: '向かっています', id: 'coming', when: '返事「向かいます」〜5分', snd: 'ピンポーン', copy: '制作者が向かっています' },
-    { v: { mode: 'away', awayAt: '12:15', awayLeft: 1200, awayTotal: 1800 }, name: '戻り時刻', id: 'away', when: '返事「5分 / 30分で戻ります」、メニュー', snd: 'ピンポーン', copy: '12:15 ごろ戻ります / ツイートを見てみる' },
-    { v: { mode: 'sorry' }, name: 'お待たせ', id: 'sorry', when: '5分返事なし〜2分', snd: '−', copy: 'お待たせしています / ツイートを見てみる' },
+    { v: { mode: 'away', awayAt: '12:15', awayLeft: 1200, awayTotal: 1800 }, name: '戻り時刻', id: 'away', when: '返事「5分 / 30分で戻ります」、メニュー', snd: 'ピンポーン', copy: '12:15 ごろ戻ります / 詳しく見てみる' },
+    { v: { mode: 'sorry' }, name: 'お待たせ', id: 'sorry', when: '5分返事なし〜2分', snd: '−', copy: 'お待たせしています / 詳しく見てみる' },
     { v: { mode: 'failed' }, name: '失敗', id: 'failed', when: 'やり直し3回とも失敗〜30秒', snd: 'ポッ ポッ', copy: 'うまく届きませんでした / もう一度タッチしてください' },
     { v: { mode: 'present' }, name: '在席', id: 'present', when: 'メニューで切り替え〜60分', snd: '−', copy: '制作者がいます / お気軽にお声がけください' },
-    { v: { mode: 'sent', el: 83, card: 1 }, name: '製品カード', id: 'card', when: '待っている間にダイヤルを回す', snd: 'コッ', copy: 'dotmatrix40 Wireless ほか4枚 / QRで詳しく見る' },
+    { v: { mode: 'sent', el: 83, card: 1 }, name: '製品カード', id: 'card', when: '待っている間にダイヤルを回す', snd: 'コッ', copy: 'Product A ほか4枚 / QRで詳しく見る' },
     { v: { mode: 'idle', menu: { sel: 4, vol: 1, armed: true } }, name: '担当者メニュー', id: 'menu', when: '触れたまま1段回す', snd: 'ピポ', copy: '閉じる / 在席 / 離席 / 15・30・60分で戻る / 音量' },
   ];
   const gallery = document.getElementById('gallery');
@@ -912,7 +912,7 @@ td.t { font-family: var(--f-mono); white-space: nowrap; font-variant-numeric: ta
   requestAnimationFrame(frame);
   if (document.fonts && document.fonts.load) {
     document.fonts.load(`700 20px "Noto Sans JP"`, '制作者と話してみたい！呼び出しています届きました向かっていますごろ戻りますお待たせしていますうまく届きませんでしたがいます').catch(() => {});
-    document.fonts.load(`400 13px "Noto Sans JP"`, 'ただいま席を外していますまもなく戻りますツイートを見てみるこのままお待ちくださいもう一度タッチしてくださいお気軽にお声がけくださいQRで詳しく見る').catch(() => {});
+    document.fonts.load(`400 13px "Noto Sans JP"`, 'ただいま席を外していますまもなく戻ります詳しく見てみるこのままお待ちくださいもう一度タッチしてくださいお気軽にお声がけくださいQRで詳しく見る').catch(() => {});
   }
 })();
 </script>

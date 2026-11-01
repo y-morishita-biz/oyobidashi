@@ -117,12 +117,12 @@ code { font-family: var(--f-mono); font-size: .85em; }
 <header class="hero">
   <div class="eyebrow">oyobidashi · plate · 2026-10-07 · layout B 確定</div>
   <h1>M5Dial を埋め込むプレート</h1>
-  <p class="lead">展示ブースの机に、地面から 20° で寝かせて置く呼び出しボタンのプレートです。Bambu Lab A1 mini (造形範囲 180 × 180 × 180 mm) で、文字を少し盛り上げて2色で造形します。形は横長 170 × 110 mm、レイアウトは <b>B (上に見出し、下にダイヤルと3ステップ) に確定</b>し、STEP / STL を書き出しました。M5Dial は付属のネジ式のリングでプレートを挟んで留め、左右の側板で支えます。</p>
+  <p class="lead">展示ブースの机に、地面から 20° で寝かせて置く呼び出しボタンのプレートです。造形範囲 180 × 180 mm 以上の多色対応 3D プリンターで、文字を少し盛り上げて2色で造形します。形は横長 170 × 110 mm、レイアウトは <b>B (上に見出し、下にダイヤルと3ステップ) に確定</b>し、STEP / STL を書き出しました。M5Dial は付属のネジ式のリングでプレートを挟んで留め、左右の側板で支えます。</p>
 </header>
 
 <section id="layout">
   <h2>レイアウト <small>B に決定</small></h2>
-  <p>英語、「回すと製品が見られます」、dotting dots のロゴを外し、見出し・一文・3ステップだけにしました。机に 20° で寝かせて見下ろす置き方なので、プレートの上側が奥、下側が手前になります。左右の灰色の帯 (4 mm) は側板の溝に入る部分で、文字を置いていません。</p>
+  <p>英語、「回すと製品が見られます」、ロゴを外し、見出し・一文・3ステップだけにしました。机に 20° で寝かせて見下ろす置き方なので、プレートの上側が奥、下側が手前になります。左右の灰色の帯 (4 mm) は側板の溝に入る部分で、文字を置いていません。</p>
   <div class="concepts">
     <article class="concept"><h3>A. 左にダイヤル、右に説明</h3><div class="front-img"><img src="preview_front_A.png" alt="レイアウト A の正面図"></div><ul><li>前回の案の並びのまま、要素を減らして文字を大きくした</li><li>見出しが小さめ</li></ul></article>
     <article class="concept rec"><span class="badge">決定</span><h3>B. 上に見出し、下にダイヤルと3ステップ</h3><div class="front-img"><img src="preview_front_B.png" alt="レイアウト B の正面図"></div><ul><li>奥 (上) の見出しは遠くから目に入り、手前 (下) のダイヤルは手が届きやすい</li><li>見出しをいちばん大きくできる</li></ul></article>
@@ -166,7 +166,7 @@ code { font-family: var(--f-mono); font-size: .85em; }
       <thead><tr><th>ファイル</th><th>大きさ</th><th>数</th><th>色</th><th>造形</th></tr></thead>
       <tbody>
         <tr><th><code>fit_test.stl</code></th><td class="n">60 × 60 × 3</td><td>1</td><td>どれでも</td><td>最初に造形する試し板。穴に M5Dial を通し、付属のリングで挟めるか、USB-C が挿せるかを確かめる</td></tr>
-        <tr><th><code>plate_base.stl</code><br><code>plate_raised.stl</code></th><td class="n">170 × 110 × 3<br>+ 盛り上げ 0.8</td><td>1</td><td>2色 (地 / 文字)</td><td>表を上にして平らに。Bambu Studio で2つを「1つのオブジェクトの複数パーツ」として読み込み、色を割り当てる。色が替わるのは高さ 3 mm の1回だけ</td></tr>
+        <tr><th><code>plate_base.stl</code><br><code>plate_raised.stl</code></th><td class="n">170 × 110 × 3<br>+ 盛り上げ 0.8</td><td>1</td><td>2色 (地 / 文字)</td><td>表を上にして平らに。スライサーで2つを「1つのオブジェクトの複数パーツ」として読み込み、色を割り当てる。色が替わるのは高さ 3 mm の1回だけ</td></tr>
         <tr><th><code>frame_left.stl</code><br><code>frame_right.stl</code></th><td class="n">112 × 64 × 8</td><td>各1</td><td>グレー</td><td>そのままの向き (溝が上)。サポート不要</td></tr>
         <tr><th><code>plate.step</code><br><code>frame_left.step</code><br><code>frame_right.step</code><br><code>fit_test.step</code></th><td colspan="4">上の部品の STEP (造形する向き)。plate.step は地と文字が別のボディなので、CAD でも色分けできる</td></tr>
         <tr><th><code>oyobidashi_plate.step</code></th><td colspan="4">組み立てた状態の STEP。寸法の確認や、Rhino などでの手直しに</td></tr>
@@ -205,8 +205,8 @@ code { font-family: var(--f-mono); font-size: .85em; }
         <tr><th>回るリング (前面)</th><td class="n">Ø49.7、奥行 約10 mm</td><td>製品カードと担当者メニューで回すので、プレートの前に出す</td></tr>
         <tr><th>背面のネジ</th><td class="n">外径 Ø44、長さ 約11 mm</td><td>プレートの穴に通す。付属のリング (外径 Ø50.8、高さ 5 mm) がナットになり、プレートを挟んで留める</td></tr>
         <tr><th>USB-C</th><td class="n">背面の本体の真下</td><td>リングの後ろ側にあるので、プレートが厚いとリングでふさがる。挟める厚さは約 3.5 mm まで</td></tr>
-        <tr><th>モバイルバッテリー</th><td class="n">92 × 60 × 22 mm、約180 g</td><td>Anker PowerCore 10000 (A1263)。背面に両面テープ。重りにもなる</td></tr>
-        <tr><th>A1 mini</th><td class="n">180 × 180 × 180 mm、4色まで</td><td>今回は2色。平らな板を、表を下にして造形すると文字がきれい</td></tr>
+        <tr><th>モバイルバッテリー</th><td class="n">92 × 60 × 22 mm、約180 g</td><td>10,000mAh クラスのモバイルバッテリー (作例のサイズ)。背面に両面テープ。重りにもなる</td></tr>
+        <tr><th>3D プリンター</th><td class="n">造形範囲 180 × 180 mm 以上、2色以上</td><td>今回は2色。平らな板を、表を下にして造形すると文字がきれい</td></tr>
       </tbody>
     </table>
   </div>
@@ -214,7 +214,7 @@ code { font-family: var(--f-mono); font-size: .85em; }
 
 <section id="concepts">
   <h2>検討の経緯:最初の3つの方向 <small>B 横長に決定</small></h2>
-  <p>どの案も、文言の役割は同じです。遠くから「何のプレートか」を伝える見出し、近づいた人への一文と3ステップ、M5Dial のまわりの「回せる」サインです。見出しの英語は、画面と同じ 5×7 のドットで描きます。dotting dots のドットとして、2色目でくっきり出ます。</p>
+  <p>どの案も、文言の役割は同じです。遠くから「何のプレートか」を伝える見出し、近づいた人への一文と3ステップ、M5Dial のまわりの「回せる」サインです。見出しの英語は、画面と同じ 5×7 のドットで描きます。ドットの意匠として、2色目でくっきり出ます。</p>
   <div class="toolbar">
     <span class="label">プレートの色</span>
     <div class="seg" role="group" aria-label="プレートの色">
@@ -387,7 +387,7 @@ try {
     dial(s, 60, 96);
     turnHint(s, 60, 96, 30, -20, 40, ['回すと製品が見られます', 'Turn to browse'], [93, 128, 'end']);
     steps(s, 6, 143, 108, 4.4);
-    txt(s, 'dotting dots', 60, 164, 3.4, 400);
+    txt(s, 'LOGO', 60, 164, 3.4, 400);
     dims(s, 0, 0, 120, 0, '120', true); dims(s, 0, 0, 0, 170, '170', false);
   })();
 
@@ -403,7 +403,7 @@ try {
     txt(s, '画面にタッチしてください', 79, 39.5, 5, 700, 'start');
     txt(s, 'Tap the screen to call the maker', 79, 46, 3.4, 400, 'start');
     steps(s, 77, 65, 88, 4);
-    txt(s, 'dotting dots', 164, 102, 3.2, 400, 'end');
+    txt(s, 'LOGO', 164, 102, 3.2, 400, 'end');
     dims(s, 0, 0, 170, 0, '170', true); dims(s, 0, 0, 0, 110, '110', false);
   })();
 
@@ -425,7 +425,7 @@ try {
     txt(s, '回す', cx - 40, 78, 3.4, 700); txt(s, 'Turn', cx - 40, 82.5, 2.6, 400);
     txt(s, 'タッチ → 制作者の iPhone に届く → 画面でお知らせ', cx, 116, 3.3, 700);
     txt(s, 'Tap → We get notified → Check the screen', cx, 121.5, 2.6, 400);
-    txt(s, 'dotting dots', cx, 132, 3, 400);
+    txt(s, 'LOGO', cx, 132, 3, 400);
     dims(s, 0, 0, 150, 0, 'Ø150', true); dims(s, 0, 0, 0, flat, '140', false);
   })();
 
