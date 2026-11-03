@@ -8,7 +8,7 @@
 
 配布しているファームウェア（リリース）を使うなら、ビルドは要らない。手順は [docs/setup/quick-start.md](../docs/setup/quick-start.md)。
 
-自分でビルドするとき：
+自分でビルドするときは、次のように準備する。
 
 1. `include/secrets.example.h` を `include/secrets.h` にコピーして、次の3つを入れる（作らなくてもよい。その場合は起動すると設定モードになる）
    - `WIFI_SSID` / `WIFI_PASS`:ブースに置く Android のテザリング(2.4GHz)
