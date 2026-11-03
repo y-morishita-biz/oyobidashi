@@ -1,0 +1,132 @@
+# call-button のファームウェアをビルドする。
+#   - プッシュ・PR：ビルドできるかを確かめる（できたファイルは Actions の Artifacts からダウンロードできる）
+#   - v で始まるタグ（v1.0.0 など）：GitHub のリリースを作ってファームウェアを添付し、
+#     ブラウザで書き込めるページ（GitHub Pages）を更新する
+name: firmware
+
+on:
+  push:
+    branches: ["**"]
+    tags: ["v*"]
+    paths:
+      - "call-button/**"
+      - "tools/merge_bin.py"
+      - "docs/flasher/**"
+      - ".github/workflows/firmware.yml"
+      - ".github/release-notes.md"
+  pull_request:
+    paths:
+      - "call-button/**"
+      - "tools/merge_bin.py"
+      - "docs/flasher/**"
+      - ".github/workflows/firmware.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: 秘密情報が入っていないか確かめる
+        run: tools/check_secrets.sh
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - uses: actions/cache@v4
+        with:
+          path: |
+            ~/.platformio
+            ~/.cache/pip
+          key: pio-${{ runner.os }}-${{ hashFiles('call-button/platformio.ini') }}
+
+      - name: PlatformIO を入れる
+        run: pip install --upgrade platformio
+
+      - name: バージョンを決める
+        id: ver
+        run: |
+          if [[ "$GITHUB_REF" == refs/tags/v* ]]; then
+            echo "version=${GITHUB_REF_NAME}" >> "$GITHUB_OUTPUT"
+          else
+            echo "version=dev-${GITHUB_SHA::7}" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: ビルド（配布用）
+        working-directory: call-button
+        env:
+          PLATFORMIO_BUILD_FLAGS: -DOYOBI_VERSION=\"${{ steps.ver.outputs.version }}\"
+        run: |
+          test ! -e include/secrets.h  # 配布用に secrets.h がまぎれ込まないように
+          pio run -e release
+
+      - name: 配るファイルをまとめる
+        run: |
+          mkdir -p dist
+          cp call-button/.pio/build/release/oyobidashi-call-button.bin \
+             "dist/oyobidashi-call-button-${{ steps.ver.outputs.version }}.bin"
+          (cd dist && sha256sum *.bin > SHA256SUMS.txt && cat SHA256SUMS.txt)
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: firmware
+          path: dist/
+
+      # ブラウザで書き込むページ（ESP Web Tools はファームウェアを同じサイトから読むので、一緒に置く）
+      - name: 書き込みページを組み立てる
+        run: |
+          mkdir -p site
+          cp -r docs/flasher/. site/
+          # 部品ごとに書く（1つにまとめたファイルだと、すき間にある本体の設定まで消えてしまうため）
+          cp call-button/.pio/build/release/web/*.bin site/
+          jq -n --arg v "${{ steps.ver.outputs.version }}" \
+             --slurpfile parts call-button/.pio/build/release/web/parts.json '{
+            name: "oyobidashi call-button",
+            version: $v,
+            new_install_prompt_erase: true,
+            builds: [{ chipFamily: "ESP32-S3", parts: $parts[0] }]
+          }' > site/manifest.json
+          cat site/manifest.json
+          sed -i "s/__VERSION__/${{ steps.ver.outputs.version }}/g" site/index.html
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: site
+
+  release:
+    if: startsWith(github.ref, 'refs/tags/v')
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          name: firmware
+          path: dist
+      - uses: softprops/action-gh-release@v2
+        with:
+          files: dist/*
+          body_path: .github/release-notes.md
+          generate_release_notes: true
+
+  # GitHub Pages を使うには、リポジトリの Settings → Pages → Source を「GitHub Actions」にしておく
+  pages:
+    if: startsWith(github.ref, 'refs/tags/v')
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deploy.outputs.page_url }}
+    steps:
+      - id: deploy
+        uses: actions/deploy-pages@v4

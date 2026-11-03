@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>oyobidashi 書き込み</title>
+<meta name="description" content="展示会ブースの呼び出しボタン oyobidashi のファームウェアを、ブラウザから M5Dial に書き込むページ">
+<script type="module" src="https://unpkg.com/esp-web-tools@10.0.1/dist/web/install-button.js?module"></script>
+<style>
+:root{--accent:#FF5A1F;--ink:#140700;--fg:#111;--sub:#5f5f5f;--line:#e2e2e2;--bg:#fff;--card:#f6f6f6}
+@media (prefers-color-scheme: dark){:root{--fg:#f2f2f2;--sub:#a0a0a0;--line:#333;--bg:#0d0d0d;--card:#1a1a1a}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.75 -apple-system,BlinkMacSystemFont,"Hiragino Sans","Noto Sans JP",sans-serif}
+main{max-width:640px;margin:0 auto;padding:40px 16px 64px}
+.badge{display:inline-block;font-size:12px;letter-spacing:.08em;color:var(--sub);border:1px solid var(--line);border-radius:999px;padding:2px 10px}
+h1{font-size:28px;line-height:1.3;margin:12px 0 8px}
+h2{font-size:18px;margin:40px 0 8px}
+p{margin:8px 0}
+.sub{color:var(--sub);font-size:14px}
+.install{margin:28px 0;padding:24px;border-radius:20px;background:var(--card);text-align:center}
+esp-web-install-button button[slot=activate]{font:700 17px/1 inherit;font-family:inherit;background:var(--accent);color:var(--ink);border:0;border-radius:999px;padding:16px 32px;cursor:pointer}
+.warn{border-left:4px solid var(--accent);padding:8px 14px;background:var(--card);border-radius:0 10px 10px 0;font-size:14px}
+ol{padding-left:1.4em}li{margin:6px 0}
+a{color:var(--accent)}
+code{font-family:ui-monospace,Menlo,monospace;font-size:.92em;background:var(--card);padding:1px 6px;border-radius:6px}
+footer{margin-top:48px;border-top:1px solid var(--line);padding-top:12px;color:var(--sub);font-size:13px}
+</style>
+</head>
+<body>
+<main>
+  <span class="badge">oyobidashi __VERSION__</span>
+  <h1>M5Dial に呼び出しボタンを書き込む</h1>
+  <p>パソコンの Chrome か Edge で、このページから M5Dial にファームウェアを書き込めます。ツールのインストールは要りません。</p>
+
+  <div class="install">
+    <esp-web-install-button manifest="manifest.json">
+      <button slot="activate">書き込む</button>
+      <span slot="unsupported">このブラウザでは書き込めません。パソコンの Chrome か Edge で開いてください。</span>
+      <span slot="not-allowed">安全な接続（https）で開いてください。</span>
+    </esp-web-install-button>
+    <p class="sub">M5Dial を USB-C ケーブルでつないでから押してください</p>
+  </div>
+
+  <h2>手順</h2>
+  <ol>
+    <li>M5Dial を、データ通信ができる USB-C ケーブルでパソコンにつなぐ（充電専用のケーブルだと見つかりません）</li>
+    <li>上の「書き込む」を押し、出てきた一覧から M5Dial を選んで「接続」を押す（名前は <code>USB JTAG/serial debug unit</code> などと出ます）</li>
+    <li>「Install oyobidashi call-button」を押す
+      <ul>
+        <li>はじめて書き込むとき：「Erase device」（本体を消す）にチェックを入れる</li>
+        <li>新しい版に入れ替えるとき：チェックを外したままにすると、Wi-Fi などの設定が残ります</li>
+      </ul>
+    </li>
+    <li>「Installation complete!」と出たら閉じる。M5Dial が再起動しないときは、USB ケーブルを抜いて挿し直す</li>
+    <li>M5Dial の画面に「設定モード」と QR コードが出たら、書き込みは完了です。続きは設定ガイドを見てください</li>
+  </ol>
+
+  <p class="warn">何度やっても M5Dial が一覧に出ないときは、ケーブルを替えてみてください。それでもだめなときは、<a href="https://docs.m5stack.com/ja/core/M5Dial">M5Dial の公式ドキュメント</a>で書き込みモード（ダウンロードモード）での起動のしかたを確かめてから、もう一度試してください。</p>
+
+  <h2>次にやること</h2>
+  <p>書き込んだあとの設定（テザリング・通知の受け取り）は、<a href="https://github.com/y-morishita-biz/oyobidashi/blob/main/docs/setup/quick-start.md">かんたんセットアップガイド</a>にまとめています。</p>
+
+  <footer>
+    <p>oyobidashi は MIT ライセンスで公開しているオープンソースです。使用によって生じた損害やトラブルについて、作者は責任を負いません。<a href="https://github.com/y-morishita-biz/oyobidashi">GitHub のリポジトリ</a></p>
+  </footer>
+</main>
+</body>
+</html>

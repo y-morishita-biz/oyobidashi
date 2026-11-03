@@ -5,7 +5,7 @@
 - 費用は 0 円（通知は無料の [ntfy.sh](https://ntfy.sh/)。登録不要）
 - 会場に Wi-Fi がなくても、ブースに置いたスマホのテザリング（スマホを Wi-Fi ルーター代わりにする機能）で動きます
 - 来場者には画面と音で「ちゃんと呼べた」がすぐ伝わります
-- プログラミングの知識は要りません。手順どおりにツールを入れて、設定ファイルに3行書き込むだけです
+- プログラミングの知識は要りません。パソコンのブラウザで M5Dial に書き込み、スマホから設定するだけです
 
 ```mermaid
 flowchart LR
@@ -26,24 +26,37 @@ flowchart LR
 | ブースに置くスマホ（Android / iPhone どちらでも） | テザリングで M5Dial をネットにつなぐ | ✓ |
 | 持ち歩くスマホ（iPhone / Android どちらでも） | ntfy アプリで通知を受け取る | ✓ |
 | モバイルバッテリー（2ポートあると楽） | M5Dial とテザリング用スマホの電源 | ✓ |
-| パソコン（Windows / macOS）と USB-C ケーブル | M5Dial にプログラムを書き込む。ケーブルはデータ通信ができるもの | ✓ |
+| パソコン（Windows / macOS）と USB-C ケーブル | M5Dial にプログラムを書き込む。ブラウザは Chrome か Edge。ケーブルはデータ通信ができるもの | ✓ |
 | 3D プリンター | M5Dial を埋め込むプレートとスタンド（`plate/`） | 任意 |
 
 ## はじめかた
 
-設定の手順は [docs/setup/](docs/setup/README.md) にまとめています。パソコンとスマホを手元に用意して、上から順に進めてください。知らない言葉が出てきたら、[言葉の説明](docs/setup/README.md#言葉の説明) を見てください。
+### かんたん：配布しているファームウェアを使う（おすすめ）
 
-1. [ファームウェアを書き込む](docs/setup/firmware.md)（トピック名の作り方・`secrets.h` の書き方）
+部材がそろっていれば、ツールを入れずに始められます。
+
+1. パソコンの Chrome か Edge で **[書き込みページ](https://y-morishita-biz.github.io/oyobidashi/)** を開き、M5Dial に書き込む
+2. M5Dial の画面の QR コードをスマホで読み取り、テザリングと通知の宛先（トピック名）を入れる
+3. 持ち歩くスマホの ntfy アプリで、そのトピック名を購読する
+
+詳しい手順は **[かんたんセットアップ](docs/setup/quick-start.md)** にまとめています。ファームウェアのファイルは [リリース](https://github.com/y-morishita-biz/oyobidashi/releases/latest) からもダウンロードできます。
+
+### 自分でビルドする（製品カードや文言を変えたい人）
+
+設定の手順は [docs/setup/](docs/setup/README.md) にまとめています。知らない言葉が出てきたら、[言葉の説明](docs/setup/README.md#言葉の説明) を見てください。
+
+1. [ファームウェアを自分でビルドして書き込む](docs/setup/firmware.md)
 2. [ブースに置くスマホのテザリング設定](docs/setup/tethering.md)
 3. [通知を受け取るスマホの設定（ntfy アプリ）](docs/setup/receiver-ntfy.md)
 4. [当日のチェックリスト](docs/setup/event-checklist.md)
 
-> Wi-Fi のパスワードと ntfy のトピック名は `include/secrets.h` にだけ書きます。このファイルは git の管理対象外です。詳しくは [SECURITY.md](SECURITY.md) を読んでください。
+> テザリングのパスワードと ntfy のトピック名は、M5Dial の中（設定モードで保存）か、git の管理対象外の `include/secrets.h` にだけ置きます。詳しくは [SECURITY.md](SECURITY.md) を読んでください。
 
 ## フォルダ構成
 
 ```
 call-button/    呼び出しボタン本体のファームウェア（PlatformIO）
+docs/flasher/   ブラウザで書き込むページ（リリースのたびに GitHub Pages に公開）
 battery-test/   モバイルバッテリーの自動オフを確かめるテスト用ファームウェア
 plate/          M5Dial を埋め込むプレートとスタンドの 3D モデル（build123d → STEP / STL）
 docs/           設定手順（setup/）・UX 仕様（ux-proposal.html）・プレートの設計・開発の記録
@@ -54,10 +67,12 @@ tools/          フォント生成・シリアルログ・秘密情報チェッ�
 
 通知の文言、返事のボタン、製品カード、QR コードの行き先は `call-button/src/main.cpp` の先頭にまとまっています。初期値はサンプル（`example.com` と「Product A」などの仮の製品名）なので、自分の SNS・サイトや製品に書き換えてください。何も変えなくても呼び出しと返事は動きます。画面の日本語を変えたときはフォントの作り直しが必要です（[firmware.md](docs/setup/firmware.md#画面の文言を変えたとき)）。
 
-## ライセンス
-
-[LICENSE](LICENSE) を参照してください。同梱しているサードパーティのもの（Noto Sans JP から生成したフォントデータなど）は [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md) にまとめています。
-
 ## 開発について
 
 このリポジトリは、UI デザイナーの作者が [Claude Code](https://claude.com/claude-code) と対話しながら作りました。開発の経緯や決めたことは [docs/handoff.md](docs/handoff.md)、Claude Code への指示は [CLAUDE.md](CLAUDE.md) に残しています。
+
+## ライセンスと免責事項
+
+[MIT ライセンス](LICENSE) で公開しています。同梱しているサードパーティのもの（Noto Sans JP から生成したフォントデータなど）は [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md) にまとめています。
+
+このリポジトリのファームウェア・3D モデル・ドキュメントは、無保証で提供しています。使用したことによって生じた損害やトラブル（通知が届かなかったことによる機会の損失、機器の故障、通信料金、第三者とのトラブルなどを含みます）について、作者は一切の責任を負いません。ご自身の判断と責任でお使いください。
