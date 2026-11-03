@@ -115,6 +115,7 @@ jobs:
           files: dist/*
           body_path: .github/release-notes.md
           generate_release_notes: true
+          prerelease: true  # 実機未検証のトライアル版
 
   # GitHub Pages を使うには、リポジトリの Settings → Pages → Source を「GitHub Actions」にしておく
   pages:
