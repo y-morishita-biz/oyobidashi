@@ -6,8 +6,8 @@ oyobidashi は個人の展示会ブースで使う小さな道具ですが、Wi-
 
 | もの | 置き場所 |
 |---|---|
-| テザリングの SSID・パスワード | `*/include/secrets.h`（`.gitignore` 済み） |
-| ntfy のトピック名 | `call-button/include/secrets.h` |
+| テザリングの SSID・パスワード | M5Dial の設定モード（本体に保存）、または `*/include/secrets.h`（`.gitignore` 済み） |
+| ntfy のトピック名 | 同上 |
 | 秘密鍵・API トークン・アクセストークン | このプロジェクトでは使っていません。追加するときも `secrets.h` に置く |
 
 `secrets.example.h` には、ダミーの値（`your-password` など）だけを書きます。
@@ -18,6 +18,13 @@ oyobidashi は個人の展示会ブースで使う小さな道具ですが、Wi-
 - `tools/git-hooks/pre-commit`：`secrets.h` や、ダミー以外の値が入った `WIFI_PASS` / `NTFY_TOPIC` をコミットしようとすると止める（`git config core.hooksPath tools/git-hooks` で有効化）
 - GitHub Actions（`.github/workflows/secret-guard.yml`）：プッシュと PR のたびに同じチェックをする
 - GitHub の Secret scanning / Push protection（公開リポジトリでは無料。リポジトリの Settings → Code security で有効にする）
+
+### 配布しているファームウェアと設定モード
+
+- リリースで配っているファームウェア（`pio run -e release` でビルド）には、Wi-Fi のパスワードやトピック名は入っていません。ビルドのときに `secrets.h` を読まないようにしてあり、GitHub Actions でも `secrets.h` がないことを確かめてからビルドしています
+- 設定モードで入れた値は、M5Dial の中（NVS という保存領域）に暗号化せずに保存されます。M5Dial を人に譲るときは、書き込みページで「Erase device」にチェックを入れて書き込み直すか、`esptool.py erase_flash` で消してください
+- 設定モードのあいだ、M5Dial は Wi-Fi の親機（`oyobidashi-XXXX`）になります。パスワードは起動のたびにランダムに作り、M5Dial の画面にだけ出します。設定の画面は暗号化されない HTTP ですが、この Wi-Fi は WPA2 で暗号化されています。設定が終われば親機は止まります
+- 設定の画面には今のトピック名が出ます（テザリングのパスワードは出しません）。設定モードの画面を人に見られないようにしてください
 
 ### HTTPS について
 
@@ -44,8 +51,8 @@ M5Dial から ntfy.sh への通信は HTTPS で、`call-button/src/certs.h` の�
 
 ## 漏れてしまったら
 
-1. トピック名：新しいトピック名を作り、`secrets.h` を書き換えて M5Dial に書き込み直す。ntfy アプリで古いトピックの購読をやめ、新しいトピックを購読する
-2. テザリングのパスワード：スマホのテザリング設定でパスワードを変え、`secrets.h` を書き換えて書き込み直す
+1. トピック名：新しいトピック名を作り、M5Dial に入れ直す（画面を押したまま電源を入れて設定モードで「作り直す」、または `secrets.h` を書き換えて書き込み直す）。ntfy アプリで古いトピックの購読をやめ、新しいトピックを購読する
+2. テザリングのパスワード：スマホのテザリング設定でパスワードを変え、M5Dial にも入れ直す（設定モード、または `secrets.h`）
 3. git にコミットしてしまったとき：消すコミットを作るだけでは、値が履歴に残ります。まず上の手順で値そのものを無効にしてください（値を変えれば、履歴に残った古い値は使えなくなります）。そのうえで必要なら履歴から消します
 
 ## 脆弱性の報告

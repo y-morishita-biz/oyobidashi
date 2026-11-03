@@ -21,12 +21,13 @@
 ```
 battery-test/   モバイルバッテリーの自動オフを確かめるテスト用ファームウェア（PlatformIO）
 call-button/    呼び出しボタン本体のファームウェア
-docs/           引き継ぎ資料・UX 仕様（ux-proposal.html）・プレートの設計（plate-design.html）・設定手順（setup/）
+docs/           引き継ぎ資料・UX 仕様（ux-proposal.html）・プレートの設計（plate-design.html）・設定手順（setup/）・ブラウザ書き込みページ（flasher/）
 plate/          M5Dial を埋め込むプレートの 3D モデル（build123d で STEP / STL を書き出す）
 tools/          開発用スクリプト（シリアルログの読み取り・秘密情報チェックなど）
 ```
 
 ファームウェアは1つのプロジェクトにつき1フォルダ（それぞれに platformio.ini を置く）。
+call-button の配布用は `pio run -e release`（secrets.h を読まない）。`v*` タグのプッシュで `.github/workflows/firmware.yml` がリリースと GitHub Pages の書き込みページを作る。
 
 ## ハードウェア
 

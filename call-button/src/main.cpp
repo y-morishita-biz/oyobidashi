@@ -18,6 +18,10 @@
 //                       └ 失敗（3回やり直してだめなとき）
 //    担当者の返事 → 向かっています（5分）/ 不在・戻り時刻つき（その時刻まで）→ 待機
 //    在席（担当者がいるとき。押しても通知しない。60分で待機に戻る）
+//
+//  設定モード（portal.cpp）
+//    設定がないとき、または画面を押したまま電源を入れたとき。M5Dial が Wi-Fi のアクセスポイントになり、
+//    スマホのブラウザからテザリングとトピック名を入れてもらう。設定は本体（NVS）に保存する
 // ============================================================================
 
 #include <HTTPClient.h>
@@ -28,8 +32,11 @@
 
 #include "certs.h"
 #include "fonts_noto.h"  // tools/make_vlw.py で生成（画面の文言を変えたら作り直す）
+#include "portal.h"
 
-#if __has_include("secrets.h")
+// secrets.h は、自分でビルドする人向けの初期値（設定モードで保存した値があれば、そちらを使う）。
+// 配布用のビルド（OYOBI_RELEASE）では、手元の secrets.h がまぎれ込まないように読まない
+#if !defined(OYOBI_RELEASE) && __has_include("secrets.h")
 #include "secrets.h"
 #endif
 #ifndef WIFI_SSID
@@ -39,17 +46,26 @@
 #ifndef NTFY_TOPIC
 #define NTFY_TOPIC ""
 #endif
+#ifndef OYOBI_VERSION
+#define OYOBI_VERSION "dev"  // 配布用のビルドでは、リリースのタグ（v1.0.0 など）が入る
+#endif
 
 namespace {
 
 // --- 通知の内容 -------------------------------------------------------------
 constexpr const char *NTFY_HOST = "ntfy.sh";
 constexpr const char *NTFY_URL = "https://ntfy.sh/";
-constexpr const char *REPLY_SUFFIX = "-reply";  // 返事用のトピック = NTFY_TOPIC + これ
+constexpr const char *REPLY_SUFFIX = "-reply";  // 返事用のトピック = トピック名 + これ
 // 待たせているときに画面に出す QR コード。自分の SNS やサイトの URL に書き換える
+// （設定モードで入れた値があれば、そちらを使う。配布用のビルドでは初期値なし = QR を出さない）
+#ifdef OYOBI_RELEASE
+constexpr const char *QR_URL = "";
+constexpr const char *QR_LABEL = "";
+#else
 constexpr const char *QR_URL = "https://example.com/";
-constexpr const char *QR_CAPTION = "詳しく見てみる";  // QR の下の一言（日本語を変えたらフォントを作り直す）
 constexpr const char *QR_LABEL = "example.com";      // その下の小さな文字（英数字ならフォントの作り直しは不要）
+#endif
+constexpr const char *QR_CAPTION = "詳しく見てみる";  // QR の下の一言（日本語を変えたらフォントを作り直す）
 
 constexpr const char *CALL_TITLE = "ブースで呼ばれています";
 constexpr const char *CALL_MESSAGE = "話を聞きたい人がいます！";  // 後ろに押された時刻 (10:42) を付ける
@@ -84,7 +100,12 @@ constexpr Card CARDS[] = {
     {"Product C", "Short description", STORE_URL},
     {"Follow us", "新作や制作の様子を発信中", "https://example.com/"},
 };
+// 配布用のビルドではサンプルのカードを出さない（カードを使うときは自分でビルドする）
+#ifdef OYOBI_RELEASE
+constexpr int CARD_COUNT = 0;
+#else
 constexpr int CARD_COUNT = sizeof(CARDS) / sizeof(CARDS[0]);
+#endif
 
 // --- タイミング -------------------------------------------------------------
 constexpr uint32_t COMMIT_MS = 1000;  // 押したまま回す操作を待つ時間（離せばすぐ送る）
@@ -111,6 +132,8 @@ constexpr uint32_t WIFI_RETRY_FAILED_MS = 10 * 1000;  // はっきり失敗し�
 constexpr uint32_t HTTP_TIMEOUT_MS = 10 * 1000;
 constexpr uint32_t LISTEN_RETRY_MS = 3000;
 constexpr uint32_t DRAW_INTERVAL_MS = 33;
+constexpr uint32_t SETUP_HOLD_CHECK_MS = 300;  // 電源を入れたときに押されているかを見る時間
+constexpr uint32_t SETUP_RESTART_MS = 3000;    // 保存してから再起動するまで（スマホにページを返す時間）
 
 // --- 時刻 -------------------------------------------------------------------
 constexpr const char *TZ_JST = "JST-9";
@@ -161,7 +184,13 @@ lgfx::VLWfont fonts[4];
 State state = State::Idle;
 uint32_t stateSinceMs = 0;
 bool hasConfig = false;
-char replyTopic[64] = "";
+Config config = {};
+char replyTopic[sizeof(Config::topic) + 8] = "";
+
+// 設定モード
+bool setupMode = false;
+bool setupArmed = false;  // 電源を入れたときの押下を離したか（離したあとの長押しでやめられる）
+uint32_t setupSavedMs = 0;
 
 // 呼び出し
 bool callCommitted = false;  // 押したあと、実際に送ると決めたか
@@ -230,6 +259,45 @@ const char *stateName(State s) {
 }
 
 bool localTimeValid() { return time(nullptr) > 1700000000; }
+
+// QR の行き先が設定されているか（なければ QR を出す画面にしない）
+bool hasQr() { return config.qrUrl[0] != '\0'; }
+
+// ============================================================================
+//  設定（本体の NVS に保存。なければ secrets.h とこのファイルの初期値）
+// ============================================================================
+
+constexpr const char *CONFIG_NS = "config";
+
+void loadConfig() {
+  Preferences p;
+  const bool stored = p.begin(CONFIG_NS, true) && p.isKey("topic");
+  auto get = [&](const char *key, const char *def, char *buf, size_t n) {
+    if (stored && p.isKey(key)) p.getString(key, buf, n);
+    else strlcpy(buf, def, n);
+  };
+  get("ssid", WIFI_SSID, config.ssid, sizeof(config.ssid));
+  get("pass", WIFI_PASS, config.pass, sizeof(config.pass));
+  get("topic", NTFY_TOPIC, config.topic, sizeof(config.topic));
+  get("qr", QR_URL, config.qrUrl, sizeof(config.qrUrl));
+  get("qrlabel", QR_LABEL, config.qrLabel, sizeof(config.qrLabel));
+  p.end();
+  hasConfig = config.ssid[0] && config.topic[0];
+  // 値そのものはログに出さない
+  Serial.printf("[call] config from %s, %s\n", stored ? "device" : "build",
+                hasConfig ? "ok" : "missing");
+}
+
+void saveConfig(const Config &c) {
+  Preferences p;
+  p.begin(CONFIG_NS, false);
+  p.putString("ssid", c.ssid);
+  p.putString("pass", c.pass);
+  p.putString("qr", c.qrUrl);
+  p.putString("qrlabel", c.qrLabel);
+  p.putString("topic", c.topic);  // 最後に書く（topic があれば保存済みとみなす）
+  p.end();
+}
 
 // ============================================================================
 //  音（ブザー）。鳴らし終わるのを待たずに、loop() の中で順番に鳴らす
@@ -315,7 +383,7 @@ bool publish(const Publish &p) {
   snprintf(body, sizeof(body),
            "{\"topic\":\"%s\",\"title\":\"%s\",\"message\":\"%s\",\"priority\":%d,%s"
            "\"actions\":[%s]}",
-           NTFY_TOPIC, p.title, p.message, p.priority,
+           config.topic, p.title, p.message, p.priority,
            p.priority >= 5 ? "\"tags\":[\"bell\"]," : "", actions);
 
   WiFiClientSecure client;
@@ -461,7 +529,7 @@ void requestPublish(const char *title, const char *message, int priority) {
 void startWifi() {
   WiFi.mode(WIFI_STA);
   WiFi.setAutoReconnect(true);
-  WiFi.begin(WIFI_SSID, WIFI_PASS);
+  WiFi.begin(config.ssid, config.pass);
 }
 
 void updateWifi(uint32_t now) {
@@ -490,7 +558,7 @@ void updateWifi(uint32_t now) {
     lastWifiAttemptMs = now;
     Serial.println("[call] wifi retry");
     WiFi.disconnect();
-    WiFi.begin(WIFI_SSID, WIFI_PASS);
+    WiFi.begin(config.ssid, config.pass);
   }
 }
 
@@ -811,8 +879,8 @@ void updateInput(uint32_t now) {
     Serial.printf("[call] dial %+d (enc %ld)\n", steps, (long)enc);
     if (state == State::Idle || state == State::Present) {
       spinPos += steps;
-    } else if (state == State::Sent || state == State::Coming || state == State::Away ||
-               state == State::Sorry) {
+    } else if (CARD_COUNT > 0 && (state == State::Sent || state == State::Coming ||
+                                  state == State::Away || state == State::Sorry)) {
       cardIdx = ((cardIdx + steps) % (CARD_COUNT + 1) + CARD_COUNT + 1) % (CARD_COUNT + 1);
       play(SND_TICK);
     }
@@ -1081,6 +1149,83 @@ void drawMenu(uint32_t now) {
   text(hint, 190, 11, menuAdjust ? K_ACCENT : K_SUB);
 }
 
+// 設定モードの画面。白 = QR を見る番（スマホで読み取る）、黒 = 待つ番（スマホで操作中・再起動）
+void drawSetup(uint32_t now) {
+  if (setupSavedMs) {
+    rim([&](int) { return K_ACCENT; });
+    dotWord("OK", 92, 60, K_ACCENT, K_TRACK);
+    text("保存しました", 144, 19, K_FG);
+    text("再起動します", 170, 13, K_SUB);
+    return;
+  }
+  if (portalPhoneConnected()) {
+    const float a = 0.55f + 0.45f * (0.5f + 0.5f * sinf(now / 1000.0f * 4));
+    const uint32_t c = mix(K_ACCENT, K_BG, a);
+    rim([&](int) { return c; });
+    dotWord("SETUP", 76, 120, K_ACCENT, K_TRACK);
+    text("スマホの画面で", 120, 19, K_FG);
+    text("設定を続けてください", 146, 19, K_FG);
+    text("画面が開かないときは", 178, 12, K_SUB);
+    text(portalUrl(), 196, 11, K_SUB);
+  } else {
+    canvas.fillCircle(CX, CY, 120, c565(K_PAPER));
+    rim([&](int) { return K_PAPER_TRACK; });
+    text("設定モード", 48, 15, K_PAPER_FG);
+    drawQr(portalWifiQr(), 116, 92);
+    text("スマホのカメラで読み取る", 174, 12, K_PAPER_SUB);
+    text(portalApSsid(), 194, 11, K_PAPER_SUB);
+    char pw[24];
+    snprintf(pw, sizeof(pw), "PASS %s", portalApPass());
+    text(pw, 210, 11, K_PAPER_SUB);
+  }
+
+  // 設定済みのときだけ、長押しで設定をやめて元に戻せる
+  if (hasConfig && setupArmed && wasDown && !gestureDone) {
+    const uint32_t h = now - downMs;
+    if (h > STAFF_HOLD_START_MS) {
+      const uint32_t c = portalPhoneConnected() ? K_FG : K_PAPER_FG;
+      arcFromTop(110, 115,
+                 360.0f * (h - STAFF_HOLD_START_MS) / (STAFF_HOLD_MS - STAFF_HOLD_START_MS), c);
+      text("長押しで設定をやめる", 30, 10, c);
+    }
+  }
+}
+
+// 設定モードの入力：保存されたら再起動、設定済みなら長押しでやめる
+void updateSetup(uint32_t now) {
+  portalLoop();
+  Config c;
+  if (portalTakeSaved(c)) {
+    saveConfig(c);
+    setupSavedMs = now;
+    play(SND_SENT);
+  }
+  if (setupSavedMs && now - setupSavedMs >= SETUP_RESTART_MS) {
+    Serial.println("[setup] restart");
+    delay(100);
+    ESP.restart();
+  }
+
+  const bool down = M5Dial.BtnA.isPressed() || M5.Touch.getCount() > 0;
+  if (!down) {
+    setupArmed = true;
+    wasDown = false;
+    return;
+  }
+  if (!wasDown) {
+    wasDown = true;
+    downMs = now;
+    gestureDone = false;
+  }
+  if (hasConfig && setupArmed && !setupSavedMs && !gestureDone && now - downMs >= STAFF_HOLD_MS) {
+    gestureDone = true;
+    Serial.println("[setup] canceled");
+    play(SND_RESET);
+    delay(300);
+    ESP.restart();
+  }
+}
+
 // 画面の向きに合わせて回して出す（0度ならそのまま）
 void present() {
   if (screenRotation == 0) {
@@ -1097,9 +1242,8 @@ void draw(uint32_t now) {
 
   canvas.fillScreen(c565(K_BG));
 
-  if (!hasConfig) {
-    text("設定がありません", 110, 19, K_FG);
-    text("include/secrets.h", 140, 12, K_SUB);
+  if (setupMode) {
+    drawSetup(now);
     present();
     return;
   }
@@ -1141,7 +1285,7 @@ void draw(uint32_t now) {
       }
       case State::Sent: {
         const uint32_t waited = now - callMs;
-        const bool paper = waited >= QR_AFTER_MS;
+        const bool paper = waited >= QR_AFTER_MS && hasQr();
         if (paper) canvas.fillCircle(CX, CY, 120, c565(K_PAPER));
         const uint32_t fg = paper ? K_PAPER_FG : K_FG;
         const uint32_t track = paper ? K_PAPER_TRACK : K_TRACK;
@@ -1155,7 +1299,7 @@ void draw(uint32_t now) {
           text(showToast ? toastBuf : buf, 196, 12, showToast ? K_ACCENT : K_SUB);
         } else {
           text("まもなく戻ります", 54, 15, K_PAPER_FG);
-          drawQr(QR_URL, 118, 78);
+          drawQr(config.qrUrl, 118, 78);
           text(QR_CAPTION, 176, 12, K_PAPER_SUB);
           text(showToast ? toastBuf : buf, 196, 11, showToast ? K_ACCENT : K_PAPER_SUB);
         }
@@ -1178,27 +1322,38 @@ void draw(uint32_t now) {
         const int lit = left > 0 ? (int)ceilf(60.0f * left / awayTotalMs) : 0;
         canvas.fillCircle(CX, CY, 120, c565(K_PAPER));
         rim([&](int i) { return i < lit ? K_ACCENT : K_PAPER_TRACK; });
+        // QR がないときは、戻り時刻を画面の真ん中に寄せる
+        const int top = hasQr() ? 0 : 42;
         if (awayAt[0]) {
-          dotWord(awayAt, 58, 140, K_ACCENT, K_PAPER_TRACK);
-          text("ごろ戻ります", 92, 15, K_PAPER_FG);
+          dotWord(awayAt, 58 + top, 140, K_ACCENT, K_PAPER_TRACK);
+          text("ごろ戻ります", 92 + top, 15, K_PAPER_FG);
         } else {
-          dotWord("BACK", 58, 110, K_ACCENT, K_PAPER_TRACK);
+          dotWord("BACK", 58 + top, 110, K_ACCENT, K_PAPER_TRACK);
           awayText(buf, sizeof(buf));
-          text(buf, 92, 15, K_PAPER_FG);
+          text(buf, 92 + top, 15, K_PAPER_FG);
         }
-        drawQr(QR_URL, 140, 70);
-        text(showToast ? toastBuf : QR_CAPTION, 190, 12,
-             showToast ? K_ACCENT : K_PAPER_SUB);
-        text(QR_LABEL, 208, 10, K_PAPER_SUB);
+        if (hasQr()) {
+          drawQr(config.qrUrl, 140, 70);
+          text(showToast ? toastBuf : QR_CAPTION, 190, 12,
+               showToast ? K_ACCENT : K_PAPER_SUB);
+          text(config.qrLabel, 208, 10, K_PAPER_SUB);
+        } else if (showToast) {
+          text(toastBuf, 176, 12, K_ACCENT);
+        }
         break;
       }
       case State::Sorry:
         canvas.fillCircle(CX, CY, 120, c565(K_PAPER));
         rim([&](int) { return K_PAPER_TRACK; });
-        text("お待たせしています", 54, 15, K_PAPER_FG);
-        drawQr(QR_URL, 118, 78);
-        text(QR_CAPTION, 176, 12, K_PAPER_SUB);
-        text(QR_LABEL, 196, 11, K_PAPER_SUB);
+        if (hasQr()) {
+          text("お待たせしています", 54, 15, K_PAPER_FG);
+          drawQr(config.qrUrl, 118, 78);
+          text(QR_CAPTION, 176, 12, K_PAPER_SUB);
+          text(config.qrLabel, 196, 11, K_PAPER_SUB);
+        } else {
+          text("お待たせしています", 112, 19, K_PAPER_FG);
+          text("Sorry to keep you waiting", 140, 11, K_PAPER_SUB);
+        }
         break;
       case State::Failed: {
         canvas.fillCircle(CX, CY, 120, c565(K_ACCENT));
@@ -1222,7 +1377,7 @@ void draw(uint32_t now) {
     }
   }
 
-  if (cardsAvailable) drawDialHint(now, K_ACCENT);
+  if (cardsAvailable && CARD_COUNT > 0) drawDialHint(now, K_ACCENT);
 
   // Wi-Fi 未接続（担当者向けの小さな点）
   if (WiFi.status() != WL_CONNECTED) {
@@ -1244,7 +1399,7 @@ void draw(uint32_t now) {
     const uint32_t h = now - downMs;
     if (h > STAFF_HOLD_START_MS) {
       const bool paper = cardIdx > 0 || state == State::Away ||
-                         (state == State::Sent && now - callMs >= QR_AFTER_MS);
+                         (state == State::Sent && now - callMs >= QR_AFTER_MS && hasQr());
       const uint32_t c = paper ? K_PAPER_FG : K_FG;
       arcFromTop(110, 115,
                  360.0f * (h - STAFF_HOLD_START_MS) / (STAFF_HOLD_MS - STAFF_HOLD_START_MS), c);
@@ -1271,19 +1426,34 @@ void setup() {
   canvas.createSprite(240, 240);
   loadFonts();
 
-  hasConfig = strlen(WIFI_SSID) > 0 && strlen(NTFY_TOPIC) > 0;
-  snprintf(replyTopic, sizeof(replyTopic), "%s%s", NTFY_TOPIC, REPLY_SUFFIX);
-  if (hasConfig) {
+  Serial.printf("[call] oyobidashi call-button %s\n", OYOBI_VERSION);
+  loadConfig();
+  snprintf(replyTopic, sizeof(replyTopic), "%s%s", config.topic, REPLY_SUFFIX);
+
+  // 画面を押したまま電源を入れると設定モード（設定がないときは必ず）
+  bool held = false;
+  for (const uint32_t t0 = millis(); millis() - t0 < SETUP_HOLD_CHECK_MS;) {
+    M5Dial.update();
+    held = held || M5Dial.BtnA.isPressed() || M5.Touch.getCount() > 0;
+    delay(10);
+  }
+  setupMode = !hasConfig || held;
+
+  if (setupMode) {
+    Serial.printf("[setup] start (%s)\n", hasConfig ? "held at boot" : "no config");
+    setupArmed = !held;
+    canvas.fillScreen(c565(K_PAPER));  // アクセスポイントの準備中（数秒）
+    present();
+    portalBegin(config, hasConfig, OYOBI_VERSION);
+  } else {
     startWifi();
     xTaskCreatePinnedToCore(netTask, "net", 12 * 1024, nullptr, 1, nullptr, 0);
-  } else {
-    WiFi.mode(WIFI_OFF);
   }
   lastEnc = M5Dial.Encoder.read();
   stateSinceMs = millis();
   lastWifiAttemptMs = stateSinceMs;
 
-  Serial.printf("[call] boot, config %s, free heap %lu\n", hasConfig ? "ok" : "missing",
+  Serial.printf("[call] boot, %s, free heap %lu\n", setupMode ? "setup mode" : "ready",
                 (unsigned long)ESP.getFreeHeap());
 }
 
@@ -1291,7 +1461,9 @@ void loop() {
   M5Dial.update();
   const uint32_t now = millis();
 
-  if (hasConfig) {
+  if (setupMode) {
+    updateSetup(now);
+  } else {
     updateWifi(now);
     updateInput(now);
     updateState(now);

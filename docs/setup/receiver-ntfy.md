@@ -6,7 +6,7 @@
 
 1. App Store で [ntfy](https://apps.apple.com/jp/app/ntfy/id1625396347) を入れる
 2. アプリを開いて、通知を**許可**する
-3. 右上の **＋** をタップし、トピック名に `secrets.h` の `NTFY_TOPIC` と同じ文字列を入れて購読する
+3. 右上の **＋** をタップし、トピック名に M5Dial と同じ文字列（設定モードの最後に出たトピック名、または `secrets.h` の `NTFY_TOPIC`）を入れて購読する
    - 「Use another server」はオフのまま（ntfy.sh を使う）
    - 返事用の `-reply` のトピックは購読しなくて大丈夫です
 4. M5Dial の画面に触れて、通知が届くか確かめる
@@ -42,7 +42,7 @@ iPhone の通知を Mac にも出す設定（iPhone ミラーリング）を使�
 ## Android
 
 1. Google Play で [ntfy](https://play.google.com/store/apps/details?id=io.heckel.ntfy) を入れる
-2. ＋ からトピックを購読する（iPhone と同じく `NTFY_TOPIC` を入れる）
+2. ＋ からトピックを購読する（iPhone と同じく、M5Dial と同じトピック名を入れる）
 3. 通知の設定でサウンド・ポップアップを許可し、省電力の対象から外す（機種によっては「電池の最適化」「バックグラウンドの制限」）
 
 返事のボタンは通知を下に引き出すと出ます。
@@ -51,7 +51,7 @@ iPhone の通知を Mac にも出す設定（iPhone ミラーリング）を使�
 
 - トピック名は**パスワードと同じ**です。知っている人は誰でも通知を読めて、M5Dial に偽の返事も送れます
 - 展示会の写真や SNS に、ntfy アプリの画面（トピック名が写る）を載せないでください
-- 漏れたかもしれないときは、新しいトピック名を作って `secrets.h` を書き換え、M5Dial に書き込み直し、アプリで購読し直してください（[SECURITY.md](../../SECURITY.md)）
+- 漏れたかもしれないときは、新しいトピック名を作って M5Dial に入れ直し（設定モードの「作り直す」か `secrets.h`）、アプリで購読し直してください（[SECURITY.md](../../SECURITY.md)）
 
 ## 複数人で受け取る
 

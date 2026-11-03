@@ -6,11 +6,37 @@
 
 ## 準備
 
-1. `include/secrets.example.h` を `include/secrets.h` にコピーして、次の3つを入れる
+配布しているファームウェア（リリース）を使うなら、ビルドは要らない。手順は [docs/setup/quick-start.md](../docs/setup/quick-start.md)。
+
+自分でビルドするとき：
+
+1. `include/secrets.example.h` を `include/secrets.h` にコピーして、次の3つを入れる（作らなくてもよい。その場合は起動すると設定モードになる）
    - `WIFI_SSID` / `WIFI_PASS`:ブースに置く Android のテザリング(2.4GHz)
    - `NTFY_TOPIC`:通知の合言葉になるトピック名。`oyobidashi-` のあとにランダムな16文字
    - 返事は `NTFY_TOPIC` の後ろに `-reply` を付けたトピックでやり取りする(自動)
 2. M5Dial を USB でつないで書き込む(`pio run -t upload`)
+
+## 設定モード
+
+**実機未検証のトライアル機能**(ビルドが通ることだけ確認済み)。
+
+設定がないとき、または画面を押したまま電源を入れたときに入る(`src/portal.cpp`)。
+
+1. M5Dial が Wi-Fi の親機 `oyobidashi-XXXX` になり、白地に接続用の QR とパスワードを出す
+2. スマホがつながると、黒地に「スマホの画面で設定を続けてください」。スマホには設定の画面(captive portal、`http://192.168.4.1/`)が開く
+3. SSID・パスワード・トピック名(ランダムな初期値入り)・QR の行き先と下の文字(任意)を入れて保存すると、本体の NVS(名前空間 `config`)に書いて再起動する
+4. 設定済みで入ったときは、3秒長押しで何も変えずに再起動する
+
+読む順番は NVS → `secrets.h` → `main.cpp` の初期値。
+
+## ビルドの種類
+
+| env | 用途 |
+|---|---|
+| `m5dial` | ふだんの開発。`secrets.h` があれば初期値として使う。製品カードと QR のサンプル入り |
+| `release` | 配布用(GitHub のリリース)。`secrets.h` を読まない。製品カードなし・QR の初期値なし。`tools/merge_bin.py` が `.pio/build/release/` に1つにまとめた bin と、ブラウザ書き込み用の部品(`web/`)を作る |
+
+タグ `v*` をプッシュすると、`.github/workflows/firmware.yml` がリリースの作成と書き込みページ(GitHub Pages)の更新をする。
 
 ## iPhone 側の設定
 
