@@ -114,7 +114,7 @@
   - 追加した文字だけをフォントに足し、既存の文字のグリフはそのまま残した（ダウンロードできた Noto Sans JP が元のものと版違いで、ラスタライズが少し違ったため）
 - **配布用ビルド**（`pio run -e release`）：`secrets.h` を読まない。製品カード（サンプル）は出さない。QR の初期値は空で、空なら QR を出さない（届いた画面は1分たっても黒のまま、不在・お待たせは QR なしの配置）。この QR なしの配置も**デザイン確認待ち**
 - **書き込み**：`docs/flasher/index.html`（ESP Web Tools）を GitHub Pages に置き、Chrome / Edge から書き込めるようにした。1つにまとめた bin はすき間を 0xFF で埋めて NVS も消すので、ブラウザでは部品ごと（bootloader / partitions / boot_app0 / firmware）に書く。esptool 用には1つにまとめた bin をリリースに添付（設定は消える）
-- **GitHub Actions**（`.github/workflows/firmware.yml`）：プッシュごとにビルド確認。`v*` タグでリリース作成 + Pages 更新。Pages は Settings → Pages → Source を「GitHub Actions」にする必要がある
+- **GitHub Actions**（`.github/workflows/firmware.yml`）：プッシュごとにビルド確認。`v*` タグでリリース作成、続けて `pages.yml` が Pages に公開（Pages の公開先 github-pages は main からしか受け付けないので分けた）。Pages は Settings → Pages → Source を「GitHub Actions」にする必要がある
 - 手順書：`docs/setup/quick-start.md`。README の一番下に免責事項を追記
 
 ## 5. 次にやること
