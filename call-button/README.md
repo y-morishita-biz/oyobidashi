@@ -36,7 +36,7 @@
 | `m5dial` | ふだんの開発。`secrets.h` があれば初期値として使う。製品カードと QR のサンプル入り |
 | `release` | 配布用(GitHub のリリース)。`secrets.h` を読まない。製品カードなし・QR の初期値なし。`tools/merge_bin.py` が `.pio/build/release/` に1つにまとめた bin と、ブラウザ書き込み用の部品(`web/`)を作る |
 
-タグ `v*` をプッシュすると、`.github/workflows/firmware.yml` がリリースの作成と書き込みページ(GitHub Pages)の更新をする。
+タグ `v*` をプッシュすると、`.github/workflows/firmware.yml` がリリース(プレリリース)を作り、続けて `pages.yml` が書き込みページを GitHub Pages に公開する(Pages の公開は main からしか受け付けないため、別のワークフローに分けている)。
 
 ## iPhone 側の設定
 
