@@ -1,13 +1,14 @@
 # call-button のファームウェアをビルドする。
 #   - プッシュ・PR：ビルドできるかを確かめる（できたファイルは Actions の Artifacts からダウンロードできる）
-#   - v で始まるタグ（v1.0.0 など）：GitHub のリリースを作ってファームウェアを添付し、
-#     ブラウザで書き込めるページ（GitHub Pages）の材料を作る（公開は pages.yml）
+#   - リリース：GitHub の Actions → firmware → Run workflow で、main を選び version に v1.0.0 などを入れて実行する。
+#     タグとリリース（プレリリース）を作ってファームウェアを添付し、書き込みページを GitHub Pages に公開する
+#     （Pages の公開先は標準で main からしか受け付けないので、タグのプッシュではなく main からの実行にしている）
+#     Pages を使う前に一度だけ：Settings → Pages → Source を「GitHub Actions」にする
 name: firmware
 
 on:
   push:
     branches: ["**"]
-    tags: ["v*"]
     paths:
       - "call-button/**"
       - "tools/merge_bin.py"
@@ -21,6 +22,11 @@ on:
       - "docs/flasher/**"
       - ".github/workflows/firmware.yml"
   workflow_dispatch:
+    inputs:
+      version:
+        description: "リリースするバージョン（v1.0.0 など）。空ならビルドだけする"
+        required: false
+        default: ""
 
 permissions:
   contents: read
@@ -50,9 +56,17 @@ jobs:
 
       - name: バージョンを決める
         id: ver
+        env:
+          INPUT_VERSION: ${{ github.event.inputs.version }}
         run: |
-          if [[ "$GITHUB_REF" == refs/tags/v* ]]; then
-            echo "version=${GITHUB_REF_NAME}" >> "$GITHUB_OUTPUT"
+          if [ -n "$INPUT_VERSION" ]; then
+            if ! [[ "$INPUT_VERSION" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+              echo "version は v1.0.0 の形で入れてください" >&2; exit 1
+            fi
+            if [ "$GITHUB_REF" != "refs/heads/main" ]; then
+              echo "リリースは main から実行してください" >&2; exit 1
+            fi
+            echo "version=$INPUT_VERSION" >> "$GITHUB_OUTPUT"
           else
             echo "version=dev-${GITHUB_SHA::7}" >> "$GITHUB_OUTPUT"
           fi
@@ -99,7 +113,7 @@ jobs:
           path: site
 
   release:
-    if: startsWith(github.ref, 'refs/tags/v')
+    if: github.event.inputs.version != ''
     needs: build
     runs-on: ubuntu-latest
     permissions:
@@ -112,7 +126,24 @@ jobs:
           path: dist
       - uses: softprops/action-gh-release@v2
         with:
+          tag_name: ${{ github.event.inputs.version }}
+          name: ${{ github.event.inputs.version }}（トライアル版）
+          target_commitish: ${{ github.sha }}
           files: dist/*
           body_path: .github/release-notes.md
           generate_release_notes: true
           prerelease: true  # 実機未検証のトライアル版
+
+  pages:
+    if: github.event.inputs.version != ''
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deploy.outputs.page_url }}
+    steps:
+      - id: deploy
+        uses: actions/deploy-pages@v4

@@ -27,7 +27,7 @@ tools/          開発用スクリプト（シリアルログの読み取り・�
 ```
 
 ファームウェアは1つのプロジェクトにつき1フォルダ（それぞれに platformio.ini を置く）。
-call-button の配布用は `pio run -e release`（secrets.h を読まない）。`v*` タグのプッシュで `.github/workflows/firmware.yml` がリリースを作り、`pages.yml` が書き込みページを GitHub Pages に公開する。
+call-button の配布用は `pio run -e release`（secrets.h を読まない）。リリースは GitHub の Actions → firmware → Run workflow（main、version に v1.0.0 など）。`.github/workflows/firmware.yml` がタグ・プレリリース・GitHub Pages の書き込みページを作る（この環境からはタグをプッシュできない）。
 
 ## ハードウェア
 
